@@ -32,7 +32,8 @@ export default function CompanionView({
       sx={{
         px: tokens.core.spacing[4].value,
         py: tokens.core.spacing[4].value,
-        minHeight: 'calc(100vh - 72px)',
+        height: 'calc(100vh - 72px)',
+        boxSizing: 'border-box',
         bgcolor: tokens.semantic.color.surface.variant.value
       }}
     >

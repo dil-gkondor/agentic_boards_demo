@@ -7,7 +7,9 @@ import ContextMenu from './components/ContextMenu.jsx';
 import EvidenceDrawer from './components/EvidenceDrawer.jsx';
 import CompanionView from './components/CompanionView.jsx';
 import PortalView from './components/PortalView.jsx';
+import ChatSidePanel from './components/ChatSidePanel.jsx';
 import { AIChatContextProvider, useAIChatContext } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
+import { AIChatUIContextProvider, useAIChatUIContext } from '@diligentcorp/atlas-theme-mui-lens/lib/components/custom/ai/chat-context/AIChatUIContext.js';
 import { STORAGE_CASE, STORAGE_LAYOUT } from './data/storage.js';
 import { buildDashboardCases, DASHBOARD_CHIPS_AFTER_SUMMARY, DASHBOARD_CHIPS_INITIAL, DASHBOARD_MUTED_PRODUCTS, ROTATING_STATUS_MESSAGES, ASSISTANT_QUICK_PROMPTS } from './data/dashboard.js';
 import { ROUTE_TO_CASE_ID } from './data/routes.js';
@@ -41,6 +43,223 @@ function mockDashboardReply(text) {
   });
 }
 
+function ChatContextSync({ hasMessages, isGenerating, forceStarted }) {
+  const { setHasStartedChat, setIsGenerating } = useAIChatContext();
+  useEffect(() => {
+    setHasStartedChat(hasMessages || forceStarted);
+  }, [hasMessages, forceStarted, setHasStartedChat]);
+  useEffect(() => {
+    setIsGenerating(isGenerating);
+  }, [isGenerating, setIsGenerating]);
+  return null;
+}
+
+function AppContent({
+  tokens,
+  route,
+  currentMode,
+  portalViewActive,
+  companionSummaryActive,
+  companionChatActive,
+  dashboardCases,
+  dashboardMutedProducts,
+  dashboardChips,
+  dashboardMessages,
+  dashboardLoading,
+  dashboardError,
+  dashboardInput,
+  dashboardPopover,
+  dashboardSummaryCompleted,
+  loadingMessage,
+  onInputChange,
+  onSuggestionSelect,
+  onSendDashboard,
+  onStopDashboard,
+  onRetryDashboard,
+  onExpandChat,
+  onClosePopover,
+  onSeeAll,
+  onCardRoute,
+  layout,
+  onStartSplitterDrag,
+  filteredCases,
+  selectedCase,
+  selectedCaseId,
+  caseFilter,
+  evidenceFilter,
+  onSelectCase,
+  onCaseFilterChange,
+  onCycleSort,
+  onOpenDrawer,
+  onContextMenu,
+  onEvidenceFilterChange,
+  onEvidenceAction,
+  onBlockerAction,
+  assistantMessages,
+  assistantInput,
+  assistantQuickPrompts,
+  contextOn,
+  onContextToggle,
+  onAssistantInputChange,
+  onAssistantSend,
+  onAssistantPromptClick,
+  onSidePanelSend,
+  activityLog,
+  onModeChange,
+  onGoDashboard,
+  contextMenu,
+  onContextMenuClose,
+  onContextMenuAction,
+  drawerOpen,
+  onDrawerClose
+}) {
+  const { isDocked, isMinimized } = useAIChatUIContext();
+  const shouldDock = isDocked && !isMinimized;
+  const allowPanel = portalViewActive || companionSummaryActive;
+  const topBarHeight = tokens.core.spacing[9].value;
+  const panelWidthToken = tokens.component?.aiChatUi?.panel?.docked?.width?.value;
+  const dockedPanelWidth = panelWidthToken || `${layout.right}px`;
+
+  const renderSidePanel = (dockedWidth) => (
+    <ChatSidePanel
+      messages={dashboardMessages}
+      loading={dashboardLoading}
+      error={dashboardError}
+      onSend={onSidePanelSend}
+      onStop={onStopDashboard}
+      dockedWidth={dockedWidth}
+      historyItems={activityLog}
+    />
+  );
+
+  return (
+    <Box sx={{ minHeight: '100vh', bgcolor: tokens.semantic.color.surface.inverse.value, color: tokens.semantic.color.type.inverse.value }}>
+      <TopBar
+        routeView={route.view}
+        currentMode={currentMode}
+        onModeChange={onModeChange}
+        onGoDashboard={onGoDashboard}
+      />
+
+      <Box sx={{ pt: topBarHeight }}>
+        {portalViewActive && (
+          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
+            <Box sx={{ flex: 1 }}>
+              <PortalView />
+            </Box>
+            {shouldDock && (
+              <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
+                <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
+                  {renderSidePanel(dockedPanelWidth)}
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {companionSummaryActive && route.view === 'dashboard' && (
+          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
+            <Box sx={{ flex: 1 }}>
+              <DashboardView
+                dashboardCases={dashboardCases}
+                dashboardMutedProducts={dashboardMutedProducts}
+                dashboardChips={dashboardChips}
+                dashboardMessages={dashboardMessages}
+                dashboardLoading={dashboardLoading}
+                dashboardError={dashboardError}
+                dashboardInput={dashboardInput}
+                dashboardPopover={dashboardPopover}
+                dashboardSummaryCompleted={dashboardSummaryCompleted}
+                loadingMessage={loadingMessage}
+                onInputChange={onInputChange}
+                onSuggestionSelect={onSuggestionSelect}
+                onSend={onSendDashboard}
+                onStop={onStopDashboard}
+                onRetry={onRetryDashboard}
+                onExpandChat={onExpandChat}
+                onClosePopover={onClosePopover}
+                onSeeAll={onSeeAll}
+                onCardRoute={onCardRoute}
+              />
+            </Box>
+            {shouldDock && (
+              <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
+                <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
+                  {renderSidePanel(dockedPanelWidth)}
+                </Box>
+              </Box>
+            )}
+          </Box>
+        )}
+
+        {companionSummaryActive && route.view === 'case' && (
+          <CaseView
+            layout={{ left: clamp(layout.left, 240, 360), right: clamp(layout.right, 320, 480) }}
+            onStartSplitterDrag={onStartSplitterDrag}
+            filteredCases={filteredCases}
+            selectedCase={selectedCase}
+            selectedCaseId={selectedCaseId}
+            caseFilter={caseFilter}
+            evidenceFilter={evidenceFilter}
+            onSelectCase={onSelectCase}
+            onCaseFilterChange={onCaseFilterChange}
+            onCycleSort={onCycleSort}
+            onOpenDrawer={onOpenDrawer}
+            onContextMenu={onContextMenu}
+            onEvidenceFilterChange={onEvidenceFilterChange}
+            onEvidenceAction={onEvidenceAction}
+            onBlockerAction={onBlockerAction}
+            assistantMessages={assistantMessages}
+            assistantInput={assistantInput}
+            assistantQuickPrompts={assistantQuickPrompts}
+            contextOn={contextOn}
+            onContextToggle={onContextToggle}
+            onAssistantInputChange={onAssistantInputChange}
+            onAssistantSend={onAssistantSend}
+            onAssistantPromptClick={onAssistantPromptClick}
+            sidePanel={
+              shouldDock ? (
+                <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
+                  <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
+                    {renderSidePanel(dockedPanelWidth)}
+                  </Box>
+                </Box>
+              ) : null
+            }
+          />
+        )}
+
+        {companionChatActive && (
+          <CompanionView
+            messages={dashboardMessages}
+            loading={dashboardLoading}
+            error={dashboardError}
+            onSend={onSendDashboard}
+            onStop={onStopDashboard}
+          />
+        )}
+      </Box>
+
+      {allowPanel && !shouldDock && renderSidePanel()}
+
+      <ContextMenu
+        open={contextMenu.open}
+        x={contextMenu.x}
+        y={contextMenu.y}
+        onClose={onContextMenuClose}
+        onAction={onContextMenuAction}
+      />
+
+      <EvidenceDrawer
+        open={drawerOpen}
+        onClose={onDrawerClose}
+        caseTitle={selectedCase?.title}
+        evidenceItems={[...(selectedCase?.evidence.required || []), ...(selectedCase?.evidence.optional || []), ...(selectedCase?.evidence.sensitive || [])]}
+      />
+    </Box>
+  );
+}
+
 export default function App() {
   const { tokens } = useTheme();
   const [route, setRoute] = useState(parseHash());
@@ -70,6 +289,7 @@ export default function App() {
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState(null);
   const [dashboardSummaryCompleted, setDashboardSummaryCompleted] = useState(false);
+  const [activityLog, setActivityLog] = useState([]);
   const [dashboardPopover, setDashboardPopover] = useState(null);
   const dashboardLoadingTimer = useRef(null);
   const [dashboardLoadingIndex, setDashboardLoadingIndex] = useState(0);
@@ -155,9 +375,18 @@ export default function App() {
     window.addEventListener('pointerup', onUp);
   }
 
+  function logUserAction(action, detail) {
+    setActivityLog((prev) => [
+      { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, action, detail, at: new Date().toISOString() },
+      ...prev
+    ]);
+  }
+
   function sendDashboardMessage(text) {
     const trimmed = text.trim();
     if (!trimmed || dashboardLoading) return;
+
+    logUserAction('message_sent', trimmed);
 
     if (trimmed.toLowerCase().includes('smart build')) {
       setDashboardPopover({ type: 'deepReview', text: 'Upgrade to Pro to run smart build now.' });
@@ -209,6 +438,7 @@ export default function App() {
   function handleAssistantSend(text) {
     const trimmed = text.trim();
     if (!trimmed) return;
+    logUserAction('assistant_message_sent', trimmed);
     pushAssistantMessage({ role: 'user', text: trimmed });
     setAssistantInput('');
     if (!contextOn || !selectedCase) {
@@ -287,119 +517,93 @@ export default function App() {
     setHash('/');
   }
 
-  function ChatContextSync({ hasMessages, isGenerating }) {
-    const { setHasStartedChat, setIsGenerating } = useAIChatContext();
-    useEffect(() => {
-      setHasStartedChat(hasMessages);
-    }, [hasMessages, setHasStartedChat]);
-    useEffect(() => {
-      setIsGenerating(isGenerating);
-    }, [isGenerating, setIsGenerating]);
-    return null;
+  function handleSidePanelSend(prompt) {
+    sendDashboardMessage(prompt);
+    setCurrentMode('companion');
+    setCompanionView('chat');
   }
 
   return (
     <AIChatContextProvider
-      initialHasStartedChat={dashboardMessages.length > 0}
+      initialHasStartedChat={dashboardMessages.length > 0 || companionChatActive}
       initialIsGenerating={dashboardLoading}
     >
-      <ChatContextSync hasMessages={dashboardMessages.length > 0} isGenerating={dashboardLoading} />
-      <Box sx={{ minHeight: '100vh', bgcolor: tokens.semantic.color.surface.inverse.value, color: tokens.semantic.color.type.inverse.value }}>
-        <TopBar
-          routeView={route.view}
+      <ChatContextSync
+        hasMessages={dashboardMessages.length > 0}
+        isGenerating={dashboardLoading}
+        forceStarted={companionChatActive}
+      />
+      <AIChatUIContextProvider>
+        <AppContent
+          tokens={tokens}
+          route={route}
           currentMode={currentMode}
+          portalViewActive={portalViewActive}
+          companionSummaryActive={companionSummaryActive}
+          companionChatActive={companionChatActive}
+          dashboardCases={dashboardCases}
+          dashboardMutedProducts={DASHBOARD_MUTED_PRODUCTS}
+          dashboardChips={dashboardChips}
+          dashboardMessages={dashboardMessages}
+          dashboardLoading={dashboardLoading}
+          dashboardError={dashboardError}
+          dashboardInput={dashboardInput}
+          dashboardPopover={dashboardPopover}
+          dashboardSummaryCompleted={dashboardSummaryCompleted}
+          loadingMessage={loadingMessage}
+          onInputChange={setDashboardInput}
+          onSuggestionSelect={setDashboardInput}
+          onSendDashboard={() => {
+            sendDashboardMessage(dashboardInput);
+            setCompanionView('chat');
+          }}
+          onStopDashboard={stopDashboardMessage}
+          onRetryDashboard={() => sendDashboardMessage(dashboardMessages.at(-1)?.text || '')}
+          onExpandChat={() => setCompanionView('chat')}
+          onClosePopover={() => setDashboardPopover(null)}
+          onSeeAll={() => setHash('/cases/mastercard-pli')}
+          onCardRoute={setHash}
+          layout={layout}
+          onStartSplitterDrag={startSplitterDrag}
+          filteredCases={filteredCases}
+          selectedCase={selectedCase}
+          selectedCaseId={selectedCaseId}
+          caseFilter={caseFilter}
+          evidenceFilter={evidenceFilter}
+          onSelectCase={setSelectedCaseId}
+          onCaseFilterChange={setCaseFilter}
+          onCycleSort={() => {
+            const cycle = ['due', 'risk', 'activity'];
+            const next = cycle[(cycle.indexOf(caseSort) + 1) % cycle.length];
+            setCaseSort(next);
+          }}
+          onOpenDrawer={() => setDrawerOpen(true)}
+          onContextMenu={(e, caseId) => setContextMenu({ open: true, x: e.clientX, y: e.clientY, caseId })}
+          onEvidenceFilterChange={setEvidenceFilter}
+          onEvidenceAction={(label) => pushAssistantMessage({ role: 'system', text: `Evidence action: ${label}.` })}
+          onBlockerAction={(label) => pushAssistantMessage({ role: 'system', text: `Blocker action: ${label}.` })}
+          assistantMessages={assistantMessages}
+          assistantInput={assistantInput}
+          assistantQuickPrompts={ASSISTANT_QUICK_PROMPTS}
+          contextOn={contextOn}
+          onContextToggle={setContextOn}
+          onAssistantInputChange={setAssistantInput}
+          onAssistantSend={() => handleAssistantSend(assistantInput)}
+          onAssistantPromptClick={handleAssistantSend}
+          onSidePanelSend={handleSidePanelSend}
+          activityLog={activityLog}
           onModeChange={handleModeChange}
           onGoDashboard={handleLogoClick}
-        />
-
-        {portalViewActive && <PortalView />}
-
-        {companionSummaryActive && route.view === 'dashboard' && (
-          <DashboardView
-            dashboardCases={dashboardCases}
-            dashboardMutedProducts={DASHBOARD_MUTED_PRODUCTS}
-            dashboardChips={dashboardChips}
-            dashboardMessages={dashboardMessages}
-            dashboardLoading={dashboardLoading}
-            dashboardError={dashboardError}
-            dashboardInput={dashboardInput}
-            dashboardPopover={dashboardPopover}
-            dashboardSummaryCompleted={dashboardSummaryCompleted}
-            loadingMessage={loadingMessage}
-            onInputChange={setDashboardInput}
-            onSuggestionSelect={setDashboardInput}
-            onSend={() => {
-              sendDashboardMessage(dashboardInput);
-              setCompanionView('chat');
-            }}
-            onStop={stopDashboardMessage}
-            onRetry={() => sendDashboardMessage(dashboardMessages.at(-1)?.text || '')}
-            onClosePopover={() => setDashboardPopover(null)}
-            onSeeAll={() => setHash('/cases/mastercard-pli')}
-            onCardRoute={setHash}
-          />
-        )}
-
-        {companionSummaryActive && route.view === 'case' && (
-          <CaseView
-            layout={{ left: clamp(layout.left, 240, 360), right: clamp(layout.right, 320, 480) }}
-            onStartSplitterDrag={startSplitterDrag}
-            filteredCases={filteredCases}
-            selectedCase={selectedCase}
-            selectedCaseId={selectedCaseId}
-            caseFilter={caseFilter}
-            evidenceFilter={evidenceFilter}
-            onSelectCase={setSelectedCaseId}
-            onCaseFilterChange={setCaseFilter}
-            onCycleSort={() => {
-              const cycle = ['due', 'risk', 'activity'];
-              const next = cycle[(cycle.indexOf(caseSort) + 1) % cycle.length];
-              setCaseSort(next);
-            }}
-            onOpenDrawer={() => setDrawerOpen(true)}
-            onContextMenu={(e, caseId) => setContextMenu({ open: true, x: e.clientX, y: e.clientY, caseId })}
-            onEvidenceFilterChange={setEvidenceFilter}
-            onEvidenceAction={(label) => pushAssistantMessage({ role: 'system', text: `Evidence action: ${label}.` })}
-            onBlockerAction={(label) => pushAssistantMessage({ role: 'system', text: `Blocker action: ${label}.` })}
-            assistantMessages={assistantMessages}
-            assistantInput={assistantInput}
-            assistantQuickPrompts={ASSISTANT_QUICK_PROMPTS}
-            contextOn={contextOn}
-            onContextToggle={setContextOn}
-            onAssistantInputChange={setAssistantInput}
-            onAssistantSend={() => handleAssistantSend(assistantInput)}
-            onAssistantPromptClick={handleAssistantSend}
-          />
-        )}
-
-        {companionChatActive && (
-          <CompanionView
-            messages={dashboardMessages}
-            loading={dashboardLoading}
-            error={dashboardError}
-            onSend={(prompt) => sendDashboardMessage(prompt)}
-            onStop={stopDashboardMessage}
-          />
-        )}
-
-        <ContextMenu
-          open={contextMenu.open}
-          x={contextMenu.x}
-          y={contextMenu.y}
-          onClose={() => setContextMenu({ open: false, x: 0, y: 0, caseId: null })}
-          onAction={(action) => {
+          contextMenu={contextMenu}
+          onContextMenuClose={() => setContextMenu({ open: false, x: 0, y: 0, caseId: null })}
+          onContextMenuAction={(action) => {
             setContextMenu({ open: false, x: 0, y: 0, caseId: null });
             pushAssistantMessage({ role: 'system', text: `Case action: ${action} (${contextMenu.caseId}).` });
           }}
+          drawerOpen={drawerOpen}
+          onDrawerClose={() => setDrawerOpen(false)}
         />
-
-        <EvidenceDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          caseTitle={selectedCase?.title}
-          evidenceItems={[...(selectedCase?.evidence.required || []), ...(selectedCase?.evidence.optional || []), ...(selectedCase?.evidence.sensitive || [])]}
-        />
-      </Box>
+      </AIChatUIContextProvider>
     </AIChatContextProvider>
   );
 }

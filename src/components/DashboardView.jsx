@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, Chip, Stack, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, IconButton, Stack, TextField, Typography, useTheme } from '@mui/material';
 import {
   AIChatAIMessage,
   AIChatContent,
@@ -10,6 +10,7 @@ import {
   AIChatUserMessage
 } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 import SendIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Send.js';
+import FullscreenIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Fullscreen.js';
 import { SectionHeader } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 import { dueLabel } from '../utils/date.js';
 import { FEATURE_CARDS } from '../data/dashboard.js';
@@ -30,6 +31,7 @@ export default function DashboardView({
   onSend,
   onStop,
   onRetry,
+  onExpandChat,
   onClosePopover,
   onSeeAll,
   onCardRoute
@@ -105,7 +107,12 @@ export default function DashboardView({
         <Card sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.lg.value }}>
           <CardContent>
             <Stack spacing={spacing[2].value}>
-              <Typography variant="labelLg">AI chat</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="labelLg">AI chat</Typography>
+                <IconButton aria-label="Open fullscreen chat" size="small" onClick={onExpandChat}>
+                  <FullscreenIcon />
+                </IconButton>
+              </Stack>
               <Box sx={{ maxHeight: 320, overflow: 'auto' }}>
                 {dashboardMessages.length === 0 && !dashboardLoading && (
                   <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value }}>

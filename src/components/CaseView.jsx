@@ -41,7 +41,8 @@ export default function CaseView({
   onContextToggle,
   onAssistantInputChange,
   onAssistantSend,
-  onAssistantPromptClick
+  onAssistantPromptClick,
+  sidePanel
 }) {
   const { tokens } = useTheme();
   const spacing = tokens.core.spacing;
@@ -238,16 +239,18 @@ export default function CaseView({
         onPointerDown={(e) => onStartSplitterDrag('right', e)}
       />
 
-      <AssistantPanel
-        messages={assistantMessages}
-        input={assistantInput}
-        quickPrompts={assistantQuickPrompts}
-        contextOn={contextOn}
-        onContextToggle={onContextToggle}
-        onInputChange={onAssistantInputChange}
-        onSend={onAssistantSend}
-        onPromptClick={onAssistantPromptClick}
-      />
+      {sidePanel || (
+        <AssistantPanel
+          messages={assistantMessages}
+          input={assistantInput}
+          quickPrompts={assistantQuickPrompts}
+          contextOn={contextOn}
+          onContextToggle={onContextToggle}
+          onInputChange={onAssistantInputChange}
+          onSend={onAssistantSend}
+          onPromptClick={onAssistantPromptClick}
+        />
+      )}
     </Box>
   );
 }
