@@ -1,22 +1,59 @@
-## Diligent Evidence Companion
+# Diligent Evidence Companion (Vite + Atlas MUI)
 
-Agentic GRC helper (Electron) for tracking evidence report statuses: **Cases → Project detail → Agent chat**.
+This project recreates the "Diligent Evidence Companion" UI using Vite + React and the Atlas MUI theme. The UI is derived from the app manifest and includes dashboard and case views, a split-pane layout, AI chat mock flows, and an evidence drawer.
 
-### Run
+## Stack
+- Vite + React
+- Atlas MUI theme provider (`AtlasThemeProvider`) with the Lens theme
+- MUI components styled via Atlas tokens
 
-From this folder:
+## Getting Started
 
+### Install
 ```bash
 npm install
+```
+
+### Run
+```bash
 npm run dev
 ```
 
-### What’s implemented (UI MVP)
+### Build
+```bash
+npm run build
+```
 
-- **3-column layout + top bar**: dark tokens, draggable Electron top bar.
-- **Resizable splitters**: left + right columns with min/max constraints, persisted via `localStorage`.
-- **Cases list**: search, filter chips, sort, selection highlight, right-click context menu.
-- **Project detail**: sticky header, KPI chips, evidence checklist with hover inline actions, blockers, timeline, audit notes.
-- **Evidence pack drawer**: slide-in preview with index table.
-- **Agentic chat**: mode/objective/next-action header + action cards + approval gates + simulated responses.
+### Preview
+```bash
+npm run preview
+```
+
+## Project Structure
+```
+src/
+  components/
+    AssistantPanel.jsx
+    CaseView.jsx
+    ContextMenu.jsx
+    DashboardView.jsx
+    EvidenceDrawer.jsx
+    TopBar.jsx
+  data/
+    cases.js
+    dashboard.js
+    routes.js
+    storage.js
+  utils/
+    case.js
+    date.js
+    routing.js
+  App.jsx
+  main.jsx
+```
+
+## Notes
+- Atlas theme provider is configured in `src/main.jsx` using `AtlasThemeProvider` and `lensThemeOptions`.
+- Design tokens are accessed via `useTheme()` and applied in `sx`.
+- Routing is hash-based (`#/` and `#/cases/:caseSlug`).
 

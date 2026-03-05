@@ -1,0 +1,310 @@
+{
+  "manifest_version": 1,
+  "app": {
+    "name": "Diligent Evidence Companion",
+    "platform": "electron",
+    "entry": "renderer/index.html",
+    "scripts": ["renderer/renderer.js"],
+    "description": "Agentic GRC helper for tracking evidence report statuses: cases list, project detail, and assistant chat."
+  },
+  "source": {
+    "files": [
+      "renderer/index.html",
+      "renderer/renderer.js",
+      "renderer/style.css"
+    ],
+    "routing": {
+      "type": "hash",
+      "routes": [
+        { "path": "/", "view": "dashboard" },
+        { "path": "/dashboard", "view": "dashboard" },
+        { "path": "/cases/:caseSlug", "view": "case", "note": "caseSlug maps to internal case id" }
+      ],
+      "route_map": {
+        "mastercard-pli": "case_pci_q4_pam"
+      }
+    },
+    "persistence": {
+      "localStorage": {
+        "dec.layout.v1": "left/right column widths",
+        "dec.selectedCaseId.v1": "last selected case id"
+      }
+    }
+  },
+  "ui": {
+    "global_layout": {
+      "root": "#app",
+      "theme": "dark",
+      "layout": "topbar + view container",
+      "views": ["dashboard", "case"]
+    },
+    "topbar": {
+      "id": "topbar",
+      "left": {
+        "dashboard_link": "#goToDashboard",
+        "appmark": {
+          "id": "appmark",
+          "title": "Diligent Boards Companion",
+          "workspace_label": "#workspaceLabel"
+        }
+      },
+      "center": {
+        "mode_switcher": {
+          "id": "modeSwitcher",
+          "modes": ["companion", "portal"]
+        }
+      },
+      "right": {
+        "sync_pill": "#syncPill",
+        "settings_button": "#settingsBtn",
+        "user_button": "#userBtn"
+      }
+    },
+    "views": {
+      "dashboard": {
+        "id": "dashboardView",
+        "sections": [
+          {
+            "type": "hero",
+            "headline": "You're on track, Brian",
+            "subline": "Assistant pulls recurring items, flags conflicts, requests missing materials, and compiles packs."
+          },
+          {
+            "type": "cards",
+            "id": "dashboardCards",
+            "title": "Tasks need your attention",
+            "cta": "See all",
+            "cards": "rendered from DASHBOARD_CASES"
+          },
+          {
+            "type": "ai_chat",
+            "id": "dashboardAiChatTranscript",
+            "composer": {
+              "input": "#dashboardAiChatInput",
+              "chips": "#dashboardAiChatChips",
+              "send": "#dashboardAiChatSend"
+            }
+          },
+          {
+            "type": "features",
+            "title": "What I can help you with",
+            "cards": [
+              "Board Onboarding",
+              "Board Book — Meeting Draft",
+              "Smart Book Builder",
+              "Final Review & Publish"
+            ]
+          }
+        ]
+      },
+      "case": {
+        "id": "caseView",
+        "layout": "3-column grid with splitters",
+        "columns": {
+          "left": {
+            "panel": "#panelLeft",
+            "header": {
+              "title": "Board Books",
+              "sort": "#casesSortBtn",
+              "filters": "#casesChips"
+            },
+            "body": {
+              "list": "#casesList",
+              "empty": "#casesEmpty",
+              "skeleton": "#casesSkeleton"
+            }
+          },
+          "center": {
+            "panel": "#panelCenter",
+            "project_header": {
+              "title": "#projectTitle",
+              "subtitle": "#projectSubtitle",
+              "status": "#projectStatus",
+              "kpis": "#projectKpis",
+              "actions": ["#projectRequestBtn", "#projectPublishBtn"]
+            },
+            "project_content": {
+              "crossfade": "#projectCrossfade"
+            }
+          },
+          "right": {
+            "panel": "#panelRight",
+            "assistant": {
+              "transcript": "#chatTranscript",
+              "quick_prompts": "#quickPrompts",
+              "compose_input": "#chatInput",
+              "send_button": "#chatSend",
+              "drop_hint": "#dropHint"
+            }
+          }
+        }
+      }
+    },
+    "overlays": {
+      "evidence_pack_drawer": {
+        "type": "dialog",
+        "id": "evidenceDrawer",
+        "title": "#drawerTitle",
+        "subtitle": "#drawerSubtitle",
+        "body": "#drawerBody",
+        "actions": ["#drawerCancel", "#drawerSubmit", "#drawerClose"]
+      },
+      "case_context_menu": {
+        "id": "ctxmenu",
+        "type": "context_menu"
+      }
+    }
+  },
+  "data_models": {
+    "case": {
+      "id": "string",
+      "title": "string",
+      "subtitle": "string",
+      "control": "string",
+      "period": "string",
+      "owner": { "name": "string", "initials": "string" },
+      "due": "Date",
+      "risk": "High|Medium|Low",
+      "status": "In progress|Blocked|Ready for Review",
+      "tags": ["string"],
+      "progress": { "done": "number", "total": "number" },
+      "activityAt": "Date",
+      "objective": "string",
+      "evidence": {
+        "required": "Evidence[]",
+        "optional": "Evidence[]",
+        "sensitive": "Evidence[]"
+      },
+      "blockers": "Blocker[]",
+      "timeline": "TimelineEvent[]"
+    },
+    "evidence": {
+      "id": "string",
+      "name": "string",
+      "source": "string",
+      "status": "Missing|Needs Review|Uploaded|Rejected",
+      "owner": "string",
+      "updatedAt": "Date|null",
+      "hash": "string|null",
+      "flagged": "string|null"
+    },
+    "blocker": {
+      "id": "string",
+      "title": "string",
+      "actions": ["string"]
+    },
+    "timeline_event": {
+      "text": "string",
+      "when": "Date"
+    },
+    "dashboard_card": {
+      "id": "string",
+      "route": "string|null",
+      "title": "string",
+      "completion": "number",
+      "dueDate": "Date",
+      "statusPill": "string",
+      "tags": ["string"],
+      "description": "string"
+    }
+  },
+  "state": {
+    "layout": { "left": 280, "right": 360, "minLeft": 240, "maxLeft": 360, "minRight": 320, "maxRight": 480 },
+    "currentMode": "companion",
+    "cases": "seeded in memory",
+    "selectedCaseId": "persisted",
+    "caseFilter": "all",
+    "caseSort": "due",
+    "caseQuery": "",
+    "evidenceFilter": "all",
+    "isSwitching": false,
+    "dashboardChat": {
+      "messages": [],
+      "loading": false,
+      "error": null,
+      "fullViewMode": false,
+      "lastProPromptTrigger": null,
+      "loadingMessageInterval": null,
+      "cancelled": false
+    },
+    "dashboardChatInitialized": false,
+    "dashboardSummaryCompleted": false
+  },
+  "behavior": {
+    "initialization": [
+      "load layout from localStorage",
+      "apply grid column widths",
+      "seed cases and dashboard data",
+      "init selection",
+      "bind UI events",
+      "set default hash route to dashboard",
+      "render dashboard or case based on route"
+    ],
+    "layout_resizing": {
+      "left_splitter": "drag changes left panel width",
+      "right_splitter": "drag changes right panel width",
+      "persist_on_release": true
+    },
+    "routing": {
+      "hashchange": "toggle dashboard/case view",
+      "dashboard": "renders dashboard cards and AI chat",
+      "case": "renders cases list, project detail, agent context"
+    },
+    "dashboard_cards": {
+      "click_card_with_route": "set hash to route",
+      "completion_animate_after_summary": true
+    },
+    "dashboard_ai_chat": {
+      "send": "append user message, show loading, mock response after delay",
+      "chips": "prefill input with prompt",
+      "stop": "cancel loading and remove pending messages",
+      "full_view": "expands chat area after sending",
+      "pro_popovers": "smart build and summary prompts show upgrade popover",
+      "summary_completion": "marks summary completed and updates dashboard chips"
+    },
+    "cases_list": {
+      "filter": "chips update visible cases",
+      "sort": "cycles due -> risk -> activity",
+      "select": "updates project panel and agent context",
+      "context_menu": "right-click opens menu with actions"
+    },
+    "project_detail": {
+      "kpis": "evidence completion, blockers, due, risk",
+      "evidence_filters": "all/missing/needs-review/rejected",
+      "evidence_actions": "view, replace, request triggers chat cards",
+      "blocker_actions": "escalate shows approval gate",
+      "timeline": "relative timestamps"
+    },
+    "assistant_chat": {
+      "context_toggle": "case context on/off",
+      "quick_prompts": "send predefined prompts",
+      "simulated_responses": [
+        "progress/status summary",
+        "blocker summary",
+        "chase owner drafts",
+        "pack readiness steps and bundle"
+      ]
+    },
+    "drawer": {
+      "open": "CTA in project panel",
+      "close": "close button or backdrop click",
+      "content": "evidence pack index table"
+    },
+    "dropzone": {
+      "drag": "highlight compose box",
+      "drop": "creates system message and result bundle"
+    },
+    "mode_switcher": {
+      "switch": "toggle active button and update appmark title"
+    }
+  },
+  "content": {
+    "dashboard_cards": "DASHBOARD_CASES in renderer.js",
+    "cases_seed": "seedData() in renderer.js",
+    "chat_copy": {
+      "assistant_brand": "Diligent Boards Companion",
+      "system": "system",
+      "user": "you"
+    }
+  }
+}
