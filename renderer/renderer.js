@@ -78,6 +78,316 @@ const THINKING_MESSAGES = [
   'Preparing response...'
 ];
 
+// Custom messages for opening tech book
+const OPEN_BOOK_MESSAGES = [
+  'Opening latest Tech Book…',
+  'Loading the latest version…',
+  'Getting the newest Tech Book…',
+  'Syncing and opening…',
+  'Preparing your book…'
+];
+
+// Custom messages for creating AI Trends 2026 book
+const CREATE_BOOK_MESSAGES = [
+  'Scanning latest AI research (2025–2026)…',
+  'Extracting key shifts in foundation models…',
+  'Summarizing multimodal + agentic workflows…',
+  'Compiling governance, safety & regulation notes…',
+  'Drafting your AI Trends 2026 meeting book…'
+];
+
+// AI Trends 2026 Book prefill data
+const AI_TRENDS_BOOK_DATA = {
+  slug: 'ai-trends-2026',
+  title: 'Emerging AI trends in 2026',
+  startDate: '2026-02-05',
+  startTime: '10:00',
+  endDate: '2026-02-05',
+  endTime: '12:30',
+  meetingLink: 'https://zoom.us/j/1234567890?pwd=AiTrends2026',
+  remoteDetails: `Agenda (10:00–12:30):
+10:00 Welcome + objectives
+10:10 Foundation models: efficiency, scaling, distillation
+10:35 Multimodal (text+image+audio+video) & real-time
+11:00 Agentic workflows + tool use in enterprise
+11:25 On-device/edge AI + privacy-preserving compute
+11:45 Governance: safety, evals, EU/NIST/ISO alignment
+12:10 Q&A + next steps`,
+  allowPrint: true,
+  includeRemote: true,
+  created: 'February 5, 2026',
+  published: 'February 5, 2026',
+  lastUpdated: 'February 5, 2026',
+  researchMaterial: `## Research Material
+
+### Agentic AI in Workflows
+- Multi-step reasoning and autonomous task completion
+- Tool use and function calling in enterprise contexts
+- Human-in-the-loop orchestration patterns
+
+### Multimodal + Real-time Assistants
+- Text, image, audio, video unified models
+- Real-time streaming and low-latency inference
+- Context-aware multimodal understanding
+
+### Small/On-device Models + Efficiency
+- Model distillation and quantization advances
+- Edge deployment and privacy-preserving compute
+- Energy-efficient architectures
+
+### RAG + Knowledge Systems + Evaluation
+- Retrieval-augmented generation improvements
+- Knowledge graph integration
+- Evaluation frameworks and benchmarks
+
+### AI Safety/Governance/Regulation + Compliance
+- EU AI Act and NIST AI RMF alignment
+- ISO 42001 AI management systems
+- Red-teaming and safety evaluations`
+};
+
+// Create book in portal with loading animation
+window.createBookInPortal = function(btn) {
+  const card = btn.closest('.dashboard-aichat__book-card');
+  if (!card) return;
+  
+  // Hide the CTA button
+  btn.classList.add('hidden');
+  
+  // Show loading overlay
+  const loadingOverlay = card.querySelector('.dashboard-aichat__book-card-loading');
+  if (loadingOverlay) loadingOverlay.classList.remove('hidden');
+  
+  // Get loading lines
+  const loadingLines = card.querySelectorAll('.dashboard-aichat__book-card-loading-line');
+  
+  // Animate through the messages
+  let currentLine = 0;
+  const animateLines = () => {
+    loadingLines.forEach((line, idx) => {
+      if (idx < currentLine) {
+        line.classList.add('dashboard-aichat__book-card-loading-line--done');
+        line.classList.remove('dashboard-aichat__book-card-loading-line--active');
+      } else if (idx === currentLine) {
+        line.classList.add('dashboard-aichat__book-card-loading-line--active');
+        line.textContent = CREATE_BOOK_MESSAGES[idx];
+      }
+    });
+  };
+  
+  // Start animation
+  animateLines();
+  
+  const lineInterval = setInterval(() => {
+    currentLine++;
+    if (currentLine >= CREATE_BOOK_MESSAGES.length) {
+      clearInterval(lineInterval);
+      // All done - navigate to Create Book form
+      setTimeout(() => {
+        window.navigateToCreateBook();
+      }, 800);
+      return;
+    }
+    animateLines();
+  }, 1000);
+};
+
+// Navigate to Create Book wizard in Portal
+window.navigateToCreateBook = function() {
+  // Switch to Portal mode
+  const modeSwitcher = document.getElementById('modeSwitcher');
+  const portalBtn = modeSwitcher?.querySelector('[data-mode="portal"]');
+  if (portalBtn) {
+    window.switchMode('portal', portalBtn);
+  }
+  
+  // Show Create Book wizard
+  const portalView = document.getElementById('portalView');
+  const booksPage = document.getElementById('portalBooksPage');
+  const createBookPage = document.getElementById('portalCreateBookPage');
+  
+  if (booksPage) booksPage.classList.add('hidden');
+  if (createBookPage) {
+    createBookPage.classList.remove('hidden');
+    // Prefill the form
+    window.prefillCreateBookForm();
+  }
+};
+
+// Prefill Create Book form with AI Trends 2026 data
+window.prefillCreateBookForm = function() {
+  const titleInput = document.getElementById('createBookTitle');
+  const startDateInput = document.getElementById('createBookStartDate');
+  const startTimeInput = document.getElementById('createBookStartTime');
+  const endDateInput = document.getElementById('createBookEndDate');
+  const endTimeInput = document.getElementById('createBookEndTime');
+  const meetingLinkInput = document.getElementById('createBookMeetingLink');
+  const remoteDetailsInput = document.getElementById('createBookRemoteDetails');
+  const allowPrintToggle = document.getElementById('createBookAllowPrint');
+  const includeRemoteToggle = document.getElementById('createBookIncludeRemote');
+  const charCounter = document.getElementById('createBookCharCounter');
+  
+  if (titleInput) titleInput.value = AI_TRENDS_BOOK_DATA.title;
+  if (startDateInput) startDateInput.value = AI_TRENDS_BOOK_DATA.startDate;
+  if (startTimeInput) startTimeInput.value = AI_TRENDS_BOOK_DATA.startTime;
+  if (endDateInput) endDateInput.value = AI_TRENDS_BOOK_DATA.endDate;
+  if (endTimeInput) endTimeInput.value = AI_TRENDS_BOOK_DATA.endTime;
+  if (meetingLinkInput) meetingLinkInput.value = AI_TRENDS_BOOK_DATA.meetingLink;
+  if (remoteDetailsInput) {
+    remoteDetailsInput.value = AI_TRENDS_BOOK_DATA.remoteDetails;
+    if (charCounter) charCounter.textContent = `${AI_TRENDS_BOOK_DATA.remoteDetails.length}/500`;
+  }
+  if (allowPrintToggle) allowPrintToggle.checked = AI_TRENDS_BOOK_DATA.allowPrint;
+  if (includeRemoteToggle) includeRemoteToggle.checked = AI_TRENDS_BOOK_DATA.includeRemote;
+};
+
+// Show Create Book wizard from the portal
+window.showCreateBookWizard = function() {
+  const booksPage = document.getElementById('portalBooksPage');
+  const createBookPage = document.getElementById('portalCreateBookPage');
+  
+  if (booksPage) booksPage.classList.add('hidden');
+  if (createBookPage) {
+    createBookPage.classList.remove('hidden');
+    // Reset the form
+    const form = document.getElementById('createBookForm');
+    if (form) form.reset();
+    const charCounter = document.getElementById('createBookCharCounter');
+    if (charCounter) charCounter.textContent = '0/500';
+  }
+};
+
+// Back to books list from Create Book
+window.backToBooksFromCreate = function() {
+  const booksPage = document.getElementById('portalBooksPage');
+  const createBookPage = document.getElementById('portalCreateBookPage');
+  
+  if (createBookPage) createBookPage.classList.add('hidden');
+  if (booksPage) booksPage.classList.remove('hidden');
+};
+
+// Save new book
+window.saveNewBook = function() {
+  // Add the new book to the list and show it
+  const booksList = document.getElementById('portalBooksList');
+  const detailPanel = document.getElementById('portalBookDetail');
+  
+  // Create new book item
+  const newBookItem = document.createElement('div');
+  newBookItem.className = 'portal-list__item portal-list__item--new';
+  newBookItem.dataset.bookId = 'ai-trends-2026';
+  newBookItem.innerHTML = `
+    <div class="portal-list__content">
+      <div class="portal-list__title">${AI_TRENDS_BOOK_DATA.title}</div>
+      <div class="portal-list__meta">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Feb 5, 2026</span>
+        <span class="portal-badge portal-badge--published">Published</span>
+      </div>
+    </div>
+  `;
+  
+  // Insert at top of list
+  if (booksList && booksList.firstChild) {
+    booksList.insertBefore(newBookItem, booksList.firstChild);
+  }
+  
+  // Update detail panel with research material
+  if (detailPanel) {
+    detailPanel.innerHTML = `
+      <div class="portal-detail__header">
+        <span class="portal-badge portal-badge--published">Published</span>
+        <h2 class="portal-detail__title">${AI_TRENDS_BOOK_DATA.title}</h2>
+      </div>
+      <div class="portal-detail__body">
+        <div class="portal-detail__row">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <div class="portal-detail__row-content">
+            <div class="portal-detail__label">Meeting</div>
+            <div class="portal-detail__value">Feb 5, 2026 · 10:00 – 12:30</div>
+          </div>
+        </div>
+        <div class="portal-detail__row">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <div class="portal-detail__row-content">
+            <div class="portal-detail__label">History</div>
+            <div class="portal-detail__history">
+              <div>Last updated: ${AI_TRENDS_BOOK_DATA.lastUpdated}</div>
+              <div>Published: ${AI_TRENDS_BOOK_DATA.published}</div>
+              <div>Created: ${AI_TRENDS_BOOK_DATA.created}</div>
+            </div>
+          </div>
+        </div>
+        <div class="portal-detail__row portal-detail__row--research">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <div class="portal-detail__row-content">
+            <div class="portal-detail__label">Research Material</div>
+            <div class="portal-detail__research">
+              <div class="portal-research__section">
+                <h4>Agentic AI in Workflows</h4>
+                <ul>
+                  <li>Multi-step reasoning and autonomous task completion</li>
+                  <li>Tool use and function calling in enterprise contexts</li>
+                  <li>Human-in-the-loop orchestration patterns</li>
+                </ul>
+              </div>
+              <div class="portal-research__section">
+                <h4>Multimodal + Real-time Assistants</h4>
+                <ul>
+                  <li>Text, image, audio, video unified models</li>
+                  <li>Real-time streaming and low-latency inference</li>
+                  <li>Context-aware multimodal understanding</li>
+                </ul>
+              </div>
+              <div class="portal-research__section">
+                <h4>Small/On-device Models + Efficiency</h4>
+                <ul>
+                  <li>Model distillation and quantization advances</li>
+                  <li>Edge deployment and privacy-preserving compute</li>
+                  <li>Energy-efficient architectures</li>
+                </ul>
+              </div>
+              <div class="portal-research__section">
+                <h4>RAG + Knowledge Systems + Evaluation</h4>
+                <ul>
+                  <li>Retrieval-augmented generation improvements</li>
+                  <li>Knowledge graph integration</li>
+                  <li>Evaluation frameworks and benchmarks</li>
+                </ul>
+              </div>
+              <div class="portal-research__section">
+                <h4>AI Safety/Governance/Regulation + Compliance</h4>
+                <ul>
+                  <li>EU AI Act and NIST AI RMF alignment</li>
+                  <li>ISO 42001 AI management systems</li>
+                  <li>Red-teaming and safety evaluations</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="portal-detail__footer">
+        <button class="portal-btn portal-btn--primary portal-btn--full" type="button">Edit</button>
+        <button class="portal-btn portal-btn--secondary portal-btn--icon" type="button" aria-label="More options">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    `;
+  }
+  
+  // Go back to books list
+  window.backToBooksFromCreate();
+  
+  // Select the new book
+  setTimeout(() => {
+    const newItem = booksList?.querySelector('[data-book-id="ai-trends-2026"]');
+    if (newItem) {
+      newItem.click();
+    }
+  }, 100);
+};
+
 window.handleRunClick = function() {
   const input = document.getElementById('dashboardAiChatInput');
   const transcript = document.getElementById('dashboardAiChatTranscript');
@@ -90,6 +400,10 @@ window.handleRunClick = function() {
   
   const text = (input.value || '').trim();
   if (!text) return;
+  
+  // Check if this is the "Open latest tech related book" prompt
+  const isOpenBookPrompt = text.toLowerCase().includes('open latest tech') || text.toLowerCase().includes('tech related book');
+  const messages = isOpenBookPrompt ? OPEN_BOOK_MESSAGES : THINKING_MESSAGES;
   
   // Hide empty state
   if (empty) empty.classList.add('hidden');
@@ -112,17 +426,17 @@ window.handleRunClick = function() {
   // Add thinking message with animation
   const thinkingMsg = document.createElement('div');
   thinkingMsg.className = 'dashboard-aichat__msg dashboard-aichat__msg--assistant dashboard-aichat__msg--thinking';
-  thinkingMsg.innerHTML = '<div class="dashboard-aichat__thinking"><span class="dashboard-aichat__thinking-text">' + THINKING_MESSAGES[0] + '</span><span class="dashboard-aichat__thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>';
+  thinkingMsg.innerHTML = '<div class="dashboard-aichat__thinking"><span class="dashboard-aichat__thinking-text">' + messages[0] + '</span><span class="dashboard-aichat__thinking-dots"><span>.</span><span>.</span><span>.</span></span></div>';
   transcript.appendChild(thinkingMsg);
   transcript.scrollTop = transcript.scrollHeight;
   
   // Animate through thinking messages
   let thinkingIndex = 0;
   const thinkingInterval = setInterval(() => {
-    thinkingIndex = (thinkingIndex + 1) % THINKING_MESSAGES.length;
+    thinkingIndex = (thinkingIndex + 1) % messages.length;
     const textEl = thinkingMsg.querySelector('.dashboard-aichat__thinking-text');
-    if (textEl) textEl.textContent = THINKING_MESSAGES[thinkingIndex];
-  }, 1500);
+    if (textEl) textEl.textContent = messages[thinkingIndex];
+  }, 1200);
   
   // Simulate response after delay
   setTimeout(() => {
@@ -132,10 +446,47 @@ window.handleRunClick = function() {
     // Add assistant response
     const assistantMsg = document.createElement('div');
     assistantMsg.className = 'dashboard-aichat__msg dashboard-aichat__msg--assistant';
-    assistantMsg.innerHTML = '<div class="dashboard-aichat__msg-text">I have compiled the board book and it is ready for your review. The document includes all requested materials, meeting agenda, and supporting documents from the relevant committees.</div>';
+    
+    if (isOpenBookPrompt) {
+      // Show book card for "Open latest tech related book"
+      assistantMsg.innerHTML = `
+        <div class="dashboard-aichat__msg-text">I found your latest tech book:</div>
+        <div class="dashboard-aichat__book-card" id="techBookCard">
+          <div class="dashboard-aichat__book-card-status">
+            <svg class="dashboard-aichat__book-card-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Found</span>
+          </div>
+          <div class="dashboard-aichat__book-card-title">Emerging Trends in Technology for the Year 2023</div>
+          <div class="dashboard-aichat__book-card-actions">
+            <button class="dashboard-aichat__book-card-btn" type="button" title="Download">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </button>
+            <button class="dashboard-aichat__book-card-btn" type="button" title="Share">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </button>
+          </div>
+          <button class="dashboard-aichat__book-card-cta" type="button" onclick="window.createBookInPortal && window.createBookInPortal(this)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Create in portal
+          </button>
+          <div class="dashboard-aichat__book-card-loading hidden" id="bookCardLoading">
+            <div class="dashboard-aichat__book-card-loading-lines">
+              <div class="dashboard-aichat__book-card-loading-line" data-index="0"></div>
+              <div class="dashboard-aichat__book-card-loading-line" data-index="1"></div>
+              <div class="dashboard-aichat__book-card-loading-line" data-index="2"></div>
+              <div class="dashboard-aichat__book-card-loading-line" data-index="3"></div>
+              <div class="dashboard-aichat__book-card-loading-line" data-index="4"></div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      assistantMsg.innerHTML = '<div class="dashboard-aichat__msg-text">I have compiled the board book and it is ready for your review. The document includes all requested materials, meeting agenda, and supporting documents from the relevant committees.</div>';
+    }
+    
     transcript.appendChild(assistantMsg);
     transcript.scrollTop = transcript.scrollHeight;
-  }, 3000);
+  }, 3500);
 };
 
 // Global escape function
@@ -144,6 +495,39 @@ function escapeHtmlGlobal(str) {
   div.textContent = str;
   return div.innerHTML;
 }
+
+// Global mode switch function
+window.switchMode = function(mode, btn) {
+  const modeSwitcher = document.getElementById('modeSwitcher');
+  if (modeSwitcher) {
+    const buttons = modeSwitcher.querySelectorAll('.mode-switcher__btn');
+    buttons.forEach((b) => b.classList.remove('mode-switcher__btn--active'));
+  }
+  if (btn) btn.classList.add('mode-switcher__btn--active');
+  
+  if (window.state) window.state.currentMode = mode;
+  
+  const appmarkName = document.querySelector('.appmark__name');
+  if (appmarkName) {
+    appmarkName.innerHTML = mode === 'companion' 
+      ? '<span class="appmark__brand">Diligent</span> Boards Companion'
+      : '<span class="appmark__brand">Diligent</span> Boards Portal';
+  }
+  
+  const dashboardViewEl = document.getElementById('dashboardView');
+  const caseViewEl = document.getElementById('caseView');
+  const portalViewEl = document.getElementById('portalView');
+  const topbar = document.querySelector('.topbar');
+  
+  if (mode === 'portal') {
+    if (dashboardViewEl) dashboardViewEl.classList.add('hidden');
+    if (caseViewEl) caseViewEl.classList.add('hidden');
+    if (portalViewEl) portalViewEl.classList.remove('hidden');
+  } else {
+    if (portalViewEl) portalViewEl.classList.add('hidden');
+    if (dashboardViewEl) dashboardViewEl.classList.remove('hidden');
+  }
+};
 
 // Route: '' | '#/' | '#/dashboard' -> dashboard; '#/cases/mastercard-pli' -> case view
 function getHashRoute() {
@@ -581,7 +965,7 @@ function dashboardAiChatUpdateSendState() {
 
 /** Chips shown before summary is done */
 const DASHBOARD_AICHAT_CHIPS_INITIAL = [
-  { prompt: 'Generate onboarding checklist', label: 'Generate onboarding checklist', id: 'dashboardAiChatChipOnboarding' },
+  { prompt: 'Open latest tech related book', label: 'Open latest tech related book', id: 'dashboardAiChatChipOpenBook' },
   { prompt: 'Generate agenda & sections', label: 'Generate agenda & sections' },
   { prompt: 'Run smart build now', label: 'Run smart build now' },
   { prompt: 'Run final readiness check', label: 'Run final readiness check' }
@@ -1817,7 +2201,56 @@ function initModeSwitcher() {
           ? '<span class="appmark__brand">Diligent</span> Boards Companion'
           : '<span class="appmark__brand">Diligent</span> Boards Portal';
       }
+      
+      // Show/hide views based on mode
+      const dashboardViewEl = byId('dashboardView');
+      const caseViewEl = byId('caseView');
+      const portalViewEl = byId('portalView');
+      const topbar = document.querySelector('.topbar');
+      
+      if (mode === 'portal') {
+        if (dashboardViewEl) dashboardViewEl.classList.add('hidden');
+        if (caseViewEl) caseViewEl.classList.add('hidden');
+        if (portalViewEl) portalViewEl.classList.remove('hidden');
+      } else {
+        if (portalViewEl) portalViewEl.classList.add('hidden');
+        applyRoute(getHashRoute());
+      }
     });
+  });
+}
+
+function initPortalListSelection() {
+  const booksList = byId('portalBooksList');
+  if (!booksList) return;
+  
+  booksList.addEventListener('click', (e) => {
+    const item = e.target.closest('.portal-list__item');
+    if (!item) return;
+    
+    const allItems = booksList.querySelectorAll('.portal-list__item');
+    allItems.forEach((i) => {
+      i.classList.remove('portal-list__item--selected');
+      const chevron = i.querySelector('.portal-list__chevron');
+      if (chevron) chevron.remove();
+    });
+    
+    item.classList.add('portal-list__item--selected');
+    
+    const chevronSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    chevronSvg.setAttribute('class', 'portal-list__chevron');
+    chevronSvg.setAttribute('width', '20');
+    chevronSvg.setAttribute('height', '20');
+    chevronSvg.setAttribute('viewBox', '0 0 24 24');
+    chevronSvg.setAttribute('fill', 'none');
+    chevronSvg.setAttribute('stroke', 'currentColor');
+    chevronSvg.setAttribute('stroke-width', '2');
+    chevronSvg.innerHTML = '<polyline points="9 18 15 12 9 6"/>';
+    item.appendChild(chevronSvg);
+    
+    const title = item.querySelector('.portal-list__title')?.textContent || 'Book';
+    const detailTitle = document.querySelector('.portal-detail__title');
+    if (detailTitle) detailTitle.textContent = title;
   });
 }
 
@@ -1841,6 +2274,7 @@ function boot() {
   bindChat();
   bindDropzone();
   initModeSwitcher();
+  initPortalListSelection();
 
   showCasesSkeleton(true);
   seedChat();
