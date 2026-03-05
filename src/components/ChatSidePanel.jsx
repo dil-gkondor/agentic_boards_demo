@@ -7,8 +7,8 @@ import {
   AIChatMessageAvatar,
   AIChatMessageHeader,
   AIChatMessageTextBlock,
+  AIChatPanel,
   AIChatThinkingIndicator,
-  AIChatUI,
   AIChatUserMessage
 } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 
@@ -16,30 +16,35 @@ function formatTime(date) {
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function CompanionView({
-  messages,
-  loading,
-  error,
-  onSend,
-  onStop,
-  title = 'AI Companion',
-  subtitle = 'Ready to help'
-}) {
+export default function ChatSidePanel({ messages, loading, error, onSend, onStop, dockedWidth }) {
   const { tokens } = useTheme();
+  const spacing = tokens.core.spacing;
 
   return (
     <Box
       sx={{
-        px: tokens.core.spacing[4].value,
-        py: tokens.core.spacing[4].value,
-        height: 'calc(100vh - 72px)',
+        width: '100%',
+        height: `calc(100vh - ${spacing[9].value})`,
         boxSizing: 'border-box',
-        bgcolor: tokens.semantic.color.surface.variant.value
+        '& .AtlasChatPanel': {
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box'
+        },
+        '& .AtlasChatPanel-docked': {
+          width: dockedWidth || '100%',
+          maxWidth: dockedWidth || '100%'
+        }
       }}
     >
-      <AIChatUI
-        title={title}
-        subtitle={subtitle}
+      <AIChatPanel
+        title="AI Companion"
+        subtitle="Ready to help"
+        assistant={{
+          name: 'Diligent Boards Companion',
+          imageUrl: '',
+          altText: 'AI Assistant'
+        }}
         chatContent={
           <AIChatContent>
             {messages.map((msg, index) => {
@@ -95,7 +100,7 @@ export default function CompanionView({
               </AIChatAIMessage>
             )}
             {error && (
-              <Stack sx={{ mt: tokens.core.spacing[2].value }}>
+              <Stack sx={{ mt: spacing[2].value }}>
                 <Typography variant="textSm" sx={{ color: tokens.semantic.color.status.error.text.value }}>
                   {error}
                 </Typography>
@@ -105,9 +110,7 @@ export default function CompanionView({
         }
         chatBox={
           <AIChatBox
-            onSubmit={(prompt) => {
-              onSend(prompt);
-            }}
+            onSubmit={(prompt) => onSend(prompt)}
             onStop={onStop}
             slotProps={{
               textField: {

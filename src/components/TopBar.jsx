@@ -8,6 +8,11 @@ export default function TopBar({ routeView, currentMode, onModeChange, onGoDashb
   return (
     <Box
       sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1200,
         display: 'grid',
         gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
