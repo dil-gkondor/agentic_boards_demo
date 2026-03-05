@@ -104,6 +104,7 @@ function AppContent({
   onAssistantSend,
   onAssistantPromptClick,
   onSidePanelSend,
+  activityLog,
   onModeChange,
   onGoDashboard,
   contextMenu,
@@ -127,6 +128,7 @@ function AppContent({
       onSend={onSidePanelSend}
       onStop={onStopDashboard}
       dockedWidth={dockedWidth}
+      historyItems={activityLog}
     />
   );
 
@@ -287,6 +289,7 @@ export default function App() {
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState(null);
   const [dashboardSummaryCompleted, setDashboardSummaryCompleted] = useState(false);
+  const [activityLog, setActivityLog] = useState([]);
   const [dashboardPopover, setDashboardPopover] = useState(null);
   const dashboardLoadingTimer = useRef(null);
   const [dashboardLoadingIndex, setDashboardLoadingIndex] = useState(0);
@@ -372,9 +375,18 @@ export default function App() {
     window.addEventListener('pointerup', onUp);
   }
 
+  function logUserAction(action, detail) {
+    setActivityLog((prev) => [
+      { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, action, detail, at: new Date().toISOString() },
+      ...prev
+    ]);
+  }
+
   function sendDashboardMessage(text) {
     const trimmed = text.trim();
     if (!trimmed || dashboardLoading) return;
+
+    logUserAction('message_sent', trimmed);
 
     if (trimmed.toLowerCase().includes('smart build')) {
       setDashboardPopover({ type: 'deepReview', text: 'Upgrade to Pro to run smart build now.' });
@@ -426,6 +438,7 @@ export default function App() {
   function handleAssistantSend(text) {
     const trimmed = text.trim();
     if (!trimmed) return;
+    logUserAction('assistant_message_sent', trimmed);
     pushAssistantMessage({ role: 'user', text: trimmed });
     setAssistantInput('');
     if (!contextOn || !selectedCase) {
@@ -578,6 +591,7 @@ export default function App() {
           onAssistantSend={() => handleAssistantSend(assistantInput)}
           onAssistantPromptClick={handleAssistantSend}
           onSidePanelSend={handleSidePanelSend}
+          activityLog={activityLog}
           onModeChange={handleModeChange}
           onGoDashboard={handleLogoClick}
           contextMenu={contextMenu}
