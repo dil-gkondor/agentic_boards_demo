@@ -13,6 +13,7 @@ import SendIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Send.js';
 import DownloadIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Download.js';
 import ShareIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Share.js';
 import CalendarIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Calendar.js';
+import FullscreenIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Fullscreen.js';
 import { SectionHeader } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 import { dueLabel } from '../utils/date.js';
 import { FEATURE_CARDS } from '../data/dashboard.js';
@@ -33,6 +34,7 @@ export default function DashboardView({
   onSend,
   onStop,
   onRetry,
+  onExpandChat,
   onClosePopover,
   onSeeAll,
   onCardRoute,
@@ -157,7 +159,12 @@ export default function DashboardView({
         >
           <CardContent sx={{ p: { xs: '12px', md: '20px' } }}>
             <Stack spacing="16px">
-              <Typography sx={{ fontSize: '15px', fontWeight: 600 }}>AI chat</Typography>
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography sx={{ fontSize: '15px', fontWeight: 600 }}>AI chat</Typography>
+                <IconButton aria-label="Open fullscreen chat" size="small" onClick={onExpandChat}>
+                  <FullscreenIcon />
+                </IconButton>
+              </Stack>
               <Box
                 className="ai-chat-transcript"
                 sx={{ maxHeight: { xs: '140px', sm: '210px', md: '320px' }, overflow: 'auto' }}

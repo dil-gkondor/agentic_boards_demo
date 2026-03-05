@@ -9,6 +9,11 @@ export default function TopBar({ routeView, currentMode, onModeChange, onGoDashb
     <Box
       className="topbar"
       sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1200,
         display: 'grid',
         gridTemplateColumns: { xs: 'auto 1fr auto', md: '1fr auto 1fr' },
         alignItems: 'center',
