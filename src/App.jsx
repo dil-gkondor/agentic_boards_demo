@@ -9,7 +9,18 @@ import CompanionView from './components/CompanionView.jsx';
 import PortalView from './components/PortalView.jsx';
 import { AIChatContextProvider, useAIChatContext } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 import { STORAGE_CASE, STORAGE_LAYOUT } from './data/storage.js';
-import { buildDashboardCases, DASHBOARD_CHIPS_AFTER_SUMMARY, DASHBOARD_CHIPS_INITIAL, DASHBOARD_MUTED_PRODUCTS, ROTATING_STATUS_MESSAGES, ASSISTANT_QUICK_PROMPTS } from './data/dashboard.js';
+import {
+  buildDashboardCases,
+  DASHBOARD_CHIPS_AFTER_SUMMARY,
+  DASHBOARD_CHIPS_INITIAL,
+  DASHBOARD_MUTED_PRODUCTS,
+  ROTATING_STATUS_MESSAGES,
+  ASSISTANT_QUICK_PROMPTS,
+  OPEN_BOOK_MESSAGES,
+  CREATE_BOOK_MESSAGES,
+  AI_TRENDS_BOOK_DATA,
+  PORTAL_BOOKS
+} from './data/dashboard.js';
 import { ROUTE_TO_CASE_ID } from './data/routes.js';
 import { seedCases } from './data/cases.js';
 import { computeCaseSummary } from './utils/case.js';
@@ -71,6 +82,12 @@ export default function App() {
   const [dashboardError, setDashboardError] = useState(null);
   const [dashboardSummaryCompleted, setDashboardSummaryCompleted] = useState(false);
   const [dashboardPopover, setDashboardPopover] = useState(null);
+  const [dashboardResponseType, setDashboardResponseType] = useState(null);
+  const [dashboardLoadingMessages, setDashboardLoadingMessages] = useState(ROTATING_STATUS_MESSAGES);
+  const [pendingBookData, setPendingBookData] = useState(null);
+  const [portalPage, setPortalPage] = useState('books');
+  const [createBookData, setCreateBookData] = useState(null);
+  const [portalSearching, setPortalSearching] = useState(false);
   const dashboardLoadingTimer = useRef(null);
   const [dashboardLoadingIndex, setDashboardLoadingIndex] = useState(0);
   const [assistantMessages, setAssistantMessages] = useState([
@@ -158,12 +175,13 @@ export default function App() {
   function sendDashboardMessage(text) {
     const trimmed = text.trim();
     if (!trimmed || dashboardLoading) return;
+    const lower = trimmed.toLowerCase();
 
-    if (trimmed.toLowerCase().includes('smart build')) {
+    if (lower.includes('smart build')) {
       setDashboardPopover({ type: 'deepReview', text: 'Upgrade to Pro to run smart build now.' });
       return;
     }
-    if (trimmed.toLowerCase().includes('executive summary')) {
+    if (lower.includes('executive summary')) {
       setDashboardPopover({ type: 'summary', text: 'Upgrade to Pro to generate the executive summary.' });
       return;
     }
@@ -174,26 +192,114 @@ export default function App() {
     setDashboardLoading(true);
     setDashboardLoadingIndex(0);
 
+    const isOpenBook = lower.includes('open') && lower.includes('tech') && lower.includes('book');
+    const isAiTrends = lower.includes('ai') && lower.includes('trends') && lower.includes('2026');
+
+    let loadingMsgs = ROTATING_STATUS_MESSAGES;
+    let responseType = 'summary';
+
+    if (isOpenBook) {
+      loadingMsgs = OPEN_BOOK_MESSAGES;
+      responseType = 'foundBook';
+    } else if (isAiTrends) {
+      loadingMsgs = CREATE_BOOK_MESSAGES;
+      responseType = 'createBook';
+    }
+
+    setDashboardLoadingMessages(loadingMsgs);
+    setDashboardResponseType(responseType);
+
     if (dashboardLoadingTimer.current) clearInterval(dashboardLoadingTimer.current);
     dashboardLoadingTimer.current = setInterval(() => {
-      setDashboardLoadingIndex((prev) => (prev + 1) % ROTATING_STATUS_MESSAGES.length);
-    }, 2800);
+      setDashboardLoadingIndex((prev) => (prev + 1) % loadingMsgs.length);
+    }, 1800);
 
-    mockDashboardReply(trimmed)
-      .then((reply) => {
+    const delay = isOpenBook ? 10000 : isAiTrends ? 9000 : 2400;
+
+    setTimeout(() => {
+      if (dashboardLoadingTimer.current) clearInterval(dashboardLoadingTimer.current);
+      setDashboardLoading(false);
+
+      if (isOpenBook) {
+        const foundBook = PORTAL_BOOKS.find((b) => b.title.toLowerCase().includes('tech')) || PORTAL_BOOKS[4];
         setDashboardMessages((prev) => [
           ...prev,
-          { role: 'assistant', text: reply, type: 'summary', title: 'Q2 Board Book Draft' }
+          {
+            role: 'assistant',
+            type: 'foundBook',
+            book: foundBook,
+            text: `Found: ${foundBook.title}`
+          }
         ]);
-        setDashboardSummaryCompleted(true);
-      })
-      .catch((err) => {
-        setDashboardError(err?.message || 'Request failed.');
-      })
-      .finally(() => {
-        if (dashboardLoadingTimer.current) clearInterval(dashboardLoadingTimer.current);
-        setDashboardLoading(false);
-      });
+      } else if (isAiTrends) {
+        setDashboardMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            type: 'createBook',
+            bookData: AI_TRENDS_BOOK_DATA,
+            text: `Ready to create: ${AI_TRENDS_BOOK_DATA.title}`
+          }
+        ]);
+      } else {
+        mockDashboardReply(trimmed)
+          .then((reply) => {
+            setDashboardMessages((prev) => [
+              ...prev,
+              { role: 'assistant', text: reply, type: 'summary', title: 'Q2 Board Book Draft' }
+            ]);
+            setDashboardSummaryCompleted(true);
+          })
+          .catch((err) => {
+            setDashboardError(err?.message || 'Request failed.');
+          });
+      }
+    }, delay);
+  }
+
+  function handleOpenBookInPortal(book) {
+    setCurrentMode('portal');
+    setPortalPage('books');
+    setPortalSearching(true);
+    setCreateBookData(book);
+  }
+
+  function handleCreateAiTrendsBook(bookData) {
+    setPendingBookData(bookData);
+    setCurrentMode('portal');
+    setPortalPage('create');
+    setCreateBookData(bookData);
+  }
+
+  function handleRefuseAiTrendsBook() {
+    setDashboardMessages((prev) => [
+      ...prev,
+      { role: 'assistant', type: 'text', text: 'No problem! Let me know if you need anything else.' }
+    ]);
+  }
+
+  function resetToWelcome() {
+    setDashboardMessages([]);
+    setDashboardInput('');
+    setDashboardError(null);
+    setDashboardSummaryCompleted(false);
+    setDashboardPopover(null);
+    setDashboardResponseType(null);
+    setCompanionView('summary');
+  }
+
+  function handleSaveNewBook(bookFormData) {
+    const newBook = {
+      id: `new-${Date.now()}`,
+      title: bookFormData.title,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'unpublished',
+      ...bookFormData
+    };
+    setPendingBookData(null);
+    setPortalPage('books');
+    setCreateBookData(null);
+    return newBook;
   }
 
   function stopDashboardMessage() {
@@ -270,7 +376,7 @@ export default function App() {
   }
 
   const dashboardChips = dashboardSummaryCompleted ? DASHBOARD_CHIPS_AFTER_SUMMARY : DASHBOARD_CHIPS_INITIAL;
-  const loadingMessage = ROTATING_STATUS_MESSAGES[dashboardLoadingIndex];
+  const loadingMessage = dashboardLoadingMessages[dashboardLoadingIndex] || dashboardLoadingMessages[0];
 
   const portalViewActive = currentMode === 'portal';
   const companionSummaryActive = currentMode === 'companion' && companionView === 'summary';
@@ -312,7 +418,30 @@ export default function App() {
           onGoDashboard={handleLogoClick}
         />
 
-        {portalViewActive && <PortalView />}
+        {portalViewActive && (
+          <PortalView
+            page={portalPage}
+            books={PORTAL_BOOKS}
+            selectedBook={createBookData}
+            pendingBookData={pendingBookData}
+            isSearching={portalSearching}
+            onPageChange={setPortalPage}
+            onSelectBook={(book) => {
+              setCreateBookData(book);
+              setPortalPage('detail');
+            }}
+            onCreateBook={() => {
+              setCreateBookData(null);
+              setPortalPage('create');
+            }}
+            onSaveBook={handleSaveNewBook}
+            onBackToBooks={() => {
+              setPortalPage('books');
+              setCreateBookData(null);
+              setPortalSearching(false);
+            }}
+          />
+        )}
 
         {companionSummaryActive && route.view === 'dashboard' && (
           <DashboardView
@@ -337,6 +466,10 @@ export default function App() {
             onClosePopover={() => setDashboardPopover(null)}
             onSeeAll={() => setHash('/cases/mastercard-pli')}
             onCardRoute={setHash}
+            onOpenBook={handleOpenBookInPortal}
+            onCreateAiBook={handleCreateAiTrendsBook}
+            onRefuseAiBook={handleRefuseAiTrendsBook}
+            onResetChat={resetToWelcome}
           />
         )}
 
