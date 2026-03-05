@@ -1173,6 +1173,94 @@ body{
   }
 }
 
+/* New Book Card Styling */
+.dashboard-aichat__book-card--new{
+  border-color:var(--semantic-action-primary-default, #00b7fc);
+}
+.dashboard-aichat__book-card-status--ready{
+  color:#00b7fc;
+}
+.dashboard-aichat__book-card-status--ready svg{
+  color:#00b7fc;
+}
+.dashboard-aichat__book-card-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+}
+.dashboard-aichat__book-card-date{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:13px;
+  color:var(--semantic-type-muted, #8a90a5);
+}
+.dashboard-aichat__book-card-date svg{
+  color:var(--semantic-type-muted, #8a90a5);
+}
+.dashboard-aichat__book-card-summary{
+  font-size:13px;
+  color:var(--semantic-type-default, white);
+  line-height:1.5;
+  padding:12px;
+  background:var(--semantic-surface-default, #1f2536);
+  border-radius:var(--radius-md, 8px);
+  margin-bottom:12px;
+}
+.dashboard-aichat__book-card-summary strong{
+  color:var(--semantic-action-primary-default, #00b7fc);
+}
+
+/* Create/Refuse Buttons */
+.dashboard-aichat__book-card-buttons{
+  display:flex;
+  gap:12px;
+  margin-top:8px;
+}
+.dashboard-aichat__book-card-btn-primary{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:12px 20px;
+  background:var(--semantic-action-primary-default, #00b7fc);
+  border:none;
+  border-radius:var(--radius-md, 8px);
+  color:var(--core-neutral-1000, #1f2536);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.15s ease, transform 0.1s ease;
+}
+.dashboard-aichat__book-card-btn-primary:hover{
+  background:var(--semantic-action-primary-hover, #0099d6);
+}
+.dashboard-aichat__book-card-btn-primary:active{
+  transform:scale(0.98);
+}
+.dashboard-aichat__book-card-btn-secondary{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:12px 20px;
+  background:transparent;
+  border:1px solid var(--semantic-outline-default, #4c5265);
+  border-radius:var(--radius-md, 8px);
+  color:var(--semantic-type-default, white);
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:background 0.15s ease, border-color 0.15s ease;
+}
+.dashboard-aichat__book-card-btn-secondary:hover{
+  background:var(--semantic-surface-variant, #353b4d);
+  border-color:var(--semantic-type-muted, #8a90a5);
+}
+
 .dashboard-aichat__msg-meta{
   font-size:11px;
   color:var(--semantic-type-disabled);

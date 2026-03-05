@@ -401,9 +401,14 @@ window.handleRunClick = function() {
   const text = (input.value || '').trim();
   if (!text) return;
   
-  // Check if this is the "Open latest tech related book" prompt
+  // Check prompt types
   const isOpenBookPrompt = text.toLowerCase().includes('open latest tech') || text.toLowerCase().includes('tech related book');
-  const messages = isOpenBookPrompt ? OPEN_BOOK_MESSAGES : THINKING_MESSAGES;
+  const isCreateAiTrendsPrompt = text.toLowerCase().includes('ai trends 2026') || text.toLowerCase().includes('create') && text.toLowerCase().includes('2026');
+  
+  // Determine which messages to use
+  let messages = THINKING_MESSAGES;
+  if (isOpenBookPrompt) messages = OPEN_BOOK_MESSAGES;
+  if (isCreateAiTrendsPrompt) messages = CREATE_BOOK_MESSAGES;
   
   // Hide empty state
   if (empty) empty.classList.add('hidden');
@@ -448,7 +453,9 @@ window.handleRunClick = function() {
     assistantMsg.className = 'dashboard-aichat__msg dashboard-aichat__msg--assistant';
     
     if (isOpenBookPrompt) {
-      // Show book card for "Open latest tech related book"
+      // Show book card for "Open latest tech related book" - no action buttons, just info
+      // Set flag so Portal mode knows to select this book
+      window.pendingBookSelection = 'emerging-tech-2023';
       assistantMsg.innerHTML = `
         <div class="dashboard-aichat__msg-text">I found your latest tech book:</div>
         <div class="dashboard-aichat__book-card" id="techBookCard">
@@ -465,18 +472,36 @@ window.handleRunClick = function() {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
             </button>
           </div>
-          <button class="dashboard-aichat__book-card-cta" type="button" onclick="window.createBookInPortal && window.createBookInPortal(this)">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            Create in portal
-          </button>
-          <div class="dashboard-aichat__book-card-loading hidden" id="bookCardLoading">
-            <div class="dashboard-aichat__book-card-loading-lines">
-              <div class="dashboard-aichat__book-card-loading-line" data-index="0"></div>
-              <div class="dashboard-aichat__book-card-loading-line" data-index="1"></div>
-              <div class="dashboard-aichat__book-card-loading-line" data-index="2"></div>
-              <div class="dashboard-aichat__book-card-loading-line" data-index="3"></div>
-              <div class="dashboard-aichat__book-card-loading-line" data-index="4"></div>
-            </div>
+        </div>
+      `;
+    } else if (isCreateAiTrendsPrompt) {
+      // Show result card for AI Trends 2026 with Create and Refuse buttons
+      assistantMsg.innerHTML = `
+        <div class="dashboard-aichat__msg-text">I have prepared your AI Trends 2026 meeting book:</div>
+        <div class="dashboard-aichat__book-card dashboard-aichat__book-card--new" id="aiTrendsBookCard">
+          <div class="dashboard-aichat__book-card-status dashboard-aichat__book-card-status--ready">
+            <svg class="dashboard-aichat__book-card-check" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <span>Ready to create</span>
+          </div>
+          <div class="dashboard-aichat__book-card-title">${AI_TRENDS_BOOK_DATA.title}</div>
+          <div class="dashboard-aichat__book-card-meta">
+            <span class="dashboard-aichat__book-card-date">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Feb 5, 2026 · 10:00 – 12:30
+            </span>
+          </div>
+          <div class="dashboard-aichat__book-card-summary">
+            <strong>Research compiled:</strong> Agentic AI, multimodal assistants, on-device models, RAG systems, and AI governance compliance.
+          </div>
+          <div class="dashboard-aichat__book-card-buttons">
+            <button class="dashboard-aichat__book-card-btn-primary" type="button" onclick="window.handleCreateAiTrendsBook && window.handleCreateAiTrendsBook()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Create
+            </button>
+            <button class="dashboard-aichat__book-card-btn-secondary" type="button" onclick="window.handleRefuseAiTrendsBook && window.handleRefuseAiTrendsBook(this)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Refuse
+            </button>
           </div>
         </div>
       `;
@@ -487,6 +512,41 @@ window.handleRunClick = function() {
     transcript.appendChild(assistantMsg);
     transcript.scrollTop = transcript.scrollHeight;
   }, 3500);
+};
+
+// Handle Create button for AI Trends book
+window.handleCreateAiTrendsBook = function() {
+  // Set flag for pending book creation
+  window.pendingBookCreation = true;
+  
+  // Switch to Portal mode
+  const modeSwitcher = document.getElementById('modeSwitcher');
+  const portalBtn = modeSwitcher?.querySelector('[data-mode="portal"]');
+  if (portalBtn) {
+    window.switchMode('portal', portalBtn);
+  }
+};
+
+// Handle Refuse button for AI Trends book
+window.handleRefuseAiTrendsBook = function(btn) {
+  const card = btn.closest('.dashboard-aichat__book-card');
+  if (card) {
+    card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(-10px)';
+    setTimeout(() => {
+      card.remove();
+      // Add a message that the book was not created
+      const transcript = document.getElementById('dashboardAiChatTranscript');
+      if (transcript) {
+        const refuseMsg = document.createElement('div');
+        refuseMsg.className = 'dashboard-aichat__msg dashboard-aichat__msg--assistant';
+        refuseMsg.innerHTML = '<div class="dashboard-aichat__msg-text">No problem. The AI Trends 2026 book was not created. Let me know if you need anything else.</div>';
+        transcript.appendChild(refuseMsg);
+        transcript.scrollTop = transcript.scrollHeight;
+      }
+    }, 300);
+  }
 };
 
 // Global escape function
@@ -517,12 +577,44 @@ window.switchMode = function(mode, btn) {
   const dashboardViewEl = document.getElementById('dashboardView');
   const caseViewEl = document.getElementById('caseView');
   const portalViewEl = document.getElementById('portalView');
-  const topbar = document.querySelector('.topbar');
+  const booksPage = document.getElementById('portalBooksPage');
+  const createBookPage = document.getElementById('portalCreateBookPage');
   
   if (mode === 'portal') {
     if (dashboardViewEl) dashboardViewEl.classList.add('hidden');
     if (caseViewEl) caseViewEl.classList.add('hidden');
     if (portalViewEl) portalViewEl.classList.remove('hidden');
+    
+    // Check for pending book selection or pending book creation
+    if (window.pendingBookCreation) {
+      // Show Create Book form with prefilled data
+      if (booksPage) booksPage.classList.add('hidden');
+      if (createBookPage) {
+        createBookPage.classList.remove('hidden');
+        window.prefillCreateBookForm();
+      }
+      window.pendingBookCreation = false;
+    } else if (window.pendingBookSelection) {
+      // Show books list with the specific book selected
+      if (createBookPage) createBookPage.classList.add('hidden');
+      if (booksPage) booksPage.classList.remove('hidden');
+      
+      // Auto-select the "Emerging Trends in Technology" book (book ID 5)
+      setTimeout(() => {
+        const booksList = document.getElementById('portalBooksList');
+        if (booksList) {
+          const targetBook = booksList.querySelector('[data-book-id="5"]');
+          if (targetBook) {
+            targetBook.click();
+          }
+        }
+      }, 100);
+      window.pendingBookSelection = null;
+    } else {
+      // Default: show books page
+      if (createBookPage) createBookPage.classList.add('hidden');
+      if (booksPage) booksPage.classList.remove('hidden');
+    }
   } else {
     if (portalViewEl) portalViewEl.classList.add('hidden');
     if (dashboardViewEl) dashboardViewEl.classList.remove('hidden');
