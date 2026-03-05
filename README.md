@@ -1,4 +1,4 @@
-# Diligent Evidence Companion (Vite + Atlas MUI)
+# Diligent Boards Companion (Vite + Atlas MUI)
 
 This project recreates the "Diligent Evidence Companion" UI using Vite + React and the Atlas MUI theme. The UI is derived from the app manifest and includes dashboard and case views, a split-pane layout, AI chat mock flows, and an evidence drawer.
 
