@@ -159,6 +159,9 @@ export default function ChatSidePanel({ messages, loading, error, onSend, onStop
         '& .AtlasChatPanel-docked': {
           width: dockedWidth || '100%',
           maxWidth: dockedWidth || '100%'
+        },
+        '& .AtlasChatPanel-minimized': {
+          width: '400px'
         }
       }}
     >

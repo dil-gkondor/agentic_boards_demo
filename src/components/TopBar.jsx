@@ -35,7 +35,13 @@ export default function TopBar({ routeView, currentMode, onModeChange, onGoDashb
           <Typography variant="labelLg" sx={{ fontWeight: tokens.core.fontWeight.semiBold.value }}>
             <Box component="span" sx={{ color: tokens.semantic.color.type.inverse.value }}>Diligent</Box> {currentMode === 'portal' ? 'Boards Portal' : 'Boards Companion'}
           </Typography>
-          <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value }}>
+          <Typography
+            variant="textSm"
+            sx={{
+              color: tokens.semantic.color.type.muted.value,
+              pl: spacing[2].value
+            }}
+          >
             {routeView === 'dashboard' ? 'Dashboard' : 'Mastercard / PCI Program'}
           </Typography>
         </Box>
