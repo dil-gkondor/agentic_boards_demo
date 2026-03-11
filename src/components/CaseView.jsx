@@ -42,16 +42,32 @@ export default function CaseView({
   onAssistantInputChange,
   onAssistantSend,
   onAssistantPromptClick,
-  sidePanel
+  sidePanel,
+  transitionKey
 }) {
   const { tokens } = useTheme();
   const spacing = tokens.core.spacing;
+  const itemAnimation = (index) => ({
+    animation: 'fadeBlurIn 360ms ease',
+    animationDelay: `${index * 50}ms`,
+    animationFillMode: 'both'
+  });
   const gridStyle = {
     gridTemplateColumns: `${layout.left}px ${spacing.px.value} 1fr ${spacing.px.value} ${layout.right}px`
   };
 
   return (
-    <Box sx={{ display: 'grid', ...gridStyle, height: 'calc(100vh - 72px)' }}>
+    <Box
+      sx={{
+        display: 'grid',
+        ...gridStyle,
+        height: 'calc(100vh - 72px)',
+        '@keyframes fadeBlurIn': {
+          '0%': { opacity: 0, filter: 'blur(6px)', transform: 'translateY(6px)' },
+          '100%': { opacity: 1, filter: 'blur(0)', transform: 'translateY(0)' }
+        }
+      }}
+    >
       <Box sx={{ borderRight: `1px solid ${tokens.semantic.color.outline.default.value}` }}>
         <Stack sx={{ p: spacing[2].value, borderBottom: `1px solid ${tokens.semantic.color.outline.default.value}` }} spacing={1}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -73,18 +89,19 @@ export default function CaseView({
         </Stack>
         <Stack sx={{ p: spacing[2].value, overflow: 'auto', height: '100%' }} spacing={2}>
           {filteredCases.length === 0 && <Typography variant="textSm">No matching cases</Typography>}
-          {filteredCases.map((caseItem) => {
+          {filteredCases.map((caseItem, index) => {
             const dl = dueLabel(caseItem.due);
             const rl = riskLabel(caseItem.risk);
             const pct = Math.round((caseItem.progress.done / caseItem.progress.total) * 100);
             return (
               <Card
-                key={caseItem.id}
+                key={`${transitionKey}-${caseItem.id}`}
                 sx={{
                   bgcolor: tokens.semantic.color.surface.variant.value,
                   borderRadius: tokens.semantic.radius.lg.value,
                   border: caseItem.id === selectedCaseId ? `1px solid ${tokens.semantic.color.ui.focusRing.value}` : `1px solid transparent`,
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  ...itemAnimation(index)
                 }}
                 onClick={() => onSelectCase(caseItem.id)}
                 onContextMenu={(e) => {
@@ -169,8 +186,11 @@ export default function CaseView({
                   if (evidenceFilter === 'rejected') return ev.status === 'Rejected';
                   return true;
                 })
-                .map((ev) => (
-                  <Card key={ev.id} sx={{ bgcolor: tokens.semantic.color.surface.variant.value }}>
+                .map((ev, index) => (
+                  <Card
+                    key={`${transitionKey}-${ev.id}`}
+                    sx={{ bgcolor: tokens.semantic.color.surface.variant.value, ...itemAnimation(index) }}
+                  >
                     <CardContent>
                       <Typography variant="labelLg">{ev.name}</Typography>
                       <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mt: spacing['0_5'].value }}>
@@ -196,8 +216,8 @@ export default function CaseView({
 
             <SectionHeader title="Blockers" headingLevel="h4" />
             <Stack spacing={1}>
-              {(selectedCase.blockers.length ? selectedCase.blockers : [{ id: 'none', title: "No blockers. You're close to audit-ready.", actions: [] }]).map((blocker) => (
-                <Card key={blocker.id} sx={{ bgcolor: tokens.semantic.color.surface.variant.value }}>
+              {(selectedCase.blockers.length ? selectedCase.blockers : [{ id: 'none', title: "No blockers. You're close to audit-ready.", actions: [] }]).map((blocker, index) => (
+                <Card key={`${transitionKey}-${blocker.id}`} sx={{ bgcolor: tokens.semantic.color.surface.variant.value, ...itemAnimation(index) }}>
                   <CardContent>
                     <Typography variant="labelLg">{blocker.title}</Typography>
                     <Stack direction="row" spacing={1} sx={{ mt: spacing['0_5'].value }}>
@@ -220,7 +240,7 @@ export default function CaseView({
             <SectionHeader title="Timeline" headingLevel="h4" />
             <Stack spacing={1}>
               {selectedCase.timeline.map((event, idx) => (
-                <Card key={idx} sx={{ bgcolor: tokens.semantic.color.surface.variant.value }}>
+                <Card key={`${transitionKey}-${idx}`} sx={{ bgcolor: tokens.semantic.color.surface.variant.value, ...itemAnimation(idx) }}>
                   <CardContent>
                     <Typography variant="textSm">{event.text}</Typography>
                     <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value }}>

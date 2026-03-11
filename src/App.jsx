@@ -54,6 +54,14 @@ function ChatContextSync({ hasMessages, isGenerating, forceStarted }) {
   return null;
 }
 
+function ChatUIContextSync({ initialMode = 'minimized' }) {
+  const { setPresentationMode } = useAIChatUIContext();
+  useEffect(() => {
+    setPresentationMode(initialMode);
+  }, [initialMode, setPresentationMode]);
+  return null;
+}
+
 function AppContent({
   tokens,
   route,
@@ -111,7 +119,8 @@ function AppContent({
   onContextMenuClose,
   onContextMenuAction,
   drawerOpen,
-  onDrawerClose
+  onDrawerClose,
+  transitionKey
 }) {
   const { isDocked, isMinimized } = useAIChatUIContext();
   const shouldDock = isDocked && !isMinimized;
@@ -143,13 +152,21 @@ function AppContent({
 
       <Box sx={{ pt: topBarHeight }}>
         {portalViewActive && (
-          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
-            <Box sx={{ flex: 1 }}>
-              <PortalView />
+          <Box
+            sx={{
+              display: 'flex',
+              gap: tokens.core.spacing[2].value,
+              px: tokens.core.spacing[3].value,
+              width: '100%',
+              minWidth: 0
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <PortalView transitionKey={transitionKey} />
             </Box>
             {shouldDock && (
               <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
-                <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
+                <Box sx={{ position: 'sticky', top: topBarHeight, width: dockedPanelWidth }}>
                   {renderSidePanel(dockedPanelWidth)}
                 </Box>
               </Box>
@@ -180,6 +197,7 @@ function AppContent({
                 onClosePopover={onClosePopover}
                 onSeeAll={onSeeAll}
                 onCardRoute={onCardRoute}
+                transitionKey={transitionKey}
               />
             </Box>
             {shouldDock && (
@@ -217,6 +235,7 @@ function AppContent({
             onAssistantInputChange={onAssistantInputChange}
             onAssistantSend={onAssistantSend}
             onAssistantPromptClick={onAssistantPromptClick}
+            transitionKey={transitionKey}
             sidePanel={
               shouldDock ? (
                 <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
@@ -290,6 +309,7 @@ export default function App() {
   const [dashboardError, setDashboardError] = useState(null);
   const [dashboardSummaryCompleted, setDashboardSummaryCompleted] = useState(false);
   const [activityLog, setActivityLog] = useState([]);
+  const [listTransitionKey, setListTransitionKey] = useState(0);
   const [dashboardPopover, setDashboardPopover] = useState(null);
   const dashboardLoadingTimer = useRef(null);
   const [dashboardLoadingIndex, setDashboardLoadingIndex] = useState(0);
@@ -323,6 +343,10 @@ export default function App() {
   useEffect(() => {
     if (!selectedCaseId && cases[0]) setSelectedCaseId(cases[0].id);
   }, [cases, selectedCaseId]);
+
+  useEffect(() => {
+    setListTransitionKey((prev) => prev + 1);
+  }, [currentMode]);
 
   useEffect(() => {
     if (route.view === 'case' && route.caseSlug) {
@@ -534,6 +558,7 @@ export default function App() {
         forceStarted={companionChatActive}
       />
       <AIChatUIContextProvider>
+        <ChatUIContextSync initialMode="minimized" />
         <AppContent
           tokens={tokens}
           route={route}
@@ -602,6 +627,7 @@ export default function App() {
           }}
           drawerOpen={drawerOpen}
           onDrawerClose={() => setDrawerOpen(false)}
+          transitionKey={listTransitionKey}
         />
       </AIChatUIContextProvider>
     </AIChatContextProvider>

@@ -16,7 +16,7 @@ export default function TopBar({ routeView, currentMode, onModeChange, onGoDashb
         display: 'grid',
         gridTemplateColumns: '1fr auto 1fr',
         alignItems: 'center',
-        px: spacing[3].value,
+        px: spacing[6].value,
         py: spacing[2].value,
         borderBottom: `1px solid ${tokens.semantic.color.outline.default.value}`,
         bgcolor: tokens.semantic.color.surface.inverse.value

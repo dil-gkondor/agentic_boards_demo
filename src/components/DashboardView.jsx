@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Card, CardContent, Chip, IconButton, Stack, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, Card, CardContent, Chip, CircularProgress, IconButton, Stack, TextField, Typography, useTheme } from '@mui/material';
 import {
   AIChatAIMessage,
   AIChatContent,
@@ -34,14 +34,32 @@ export default function DashboardView({
   onExpandChat,
   onClosePopover,
   onSeeAll,
-  onCardRoute
+  onCardRoute,
+  transitionKey
 }) {
   const { tokens } = useTheme();
+  const {
+    presets: { CircularProgressPresets }
+  } = useTheme();
   const spacing = tokens.core.spacing;
   const timeLabel = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  const cardAnimation = (index) => ({
+    animation: 'fadeBlurIn 360ms ease',
+    animationDelay: `${index * 50}ms`,
+    animationFillMode: 'both'
+  });
 
   return (
-    <Box sx={{ px: spacing[6].value, py: spacing[6].value }}>
+    <Box
+      sx={{
+        px: spacing[6].value,
+        py: spacing[6].value,
+        '@keyframes fadeBlurIn': {
+          '0%': { opacity: 0, filter: 'blur(6px)', transform: 'translateY(6px)' },
+          '100%': { opacity: 1, filter: 'blur(0)', transform: 'translateY(0)' }
+        }
+      }}
+    >
       <Stack spacing={spacing[4].value}>
         <Box>
           <Typography variant="h3" sx={{ color: tokens.semantic.color.type.inverse.value }}>
@@ -70,31 +88,50 @@ export default function DashboardView({
             const pillKind = item.statusPill === 'At risk' ? 'error' : 'success';
             return (
               <Card
-                key={item.id}
+                key={`${transitionKey}-${item.id}`}
                 sx={{
                   bgcolor: tokens.semantic.color.surface.variant.value,
                   borderRadius: tokens.semantic.radius.lg.value,
-                  cursor: item.route ? 'pointer' : 'default'
+                  cursor: item.route ? 'pointer' : 'default',
+                  ...cardAnimation(index)
                 }}
                 onClick={() => item.route && onCardRoute(item.route)}
               >
                 <CardContent>
-                  <Typography variant="labelLg" sx={{ fontWeight: tokens.core.fontWeight.semiBold.value }}>
-                    {item.title}
-                  </Typography>
-                  <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value, mt: spacing['0_5'].value }}>
-                    {completion}% complete
-                  </Typography>
-                  <Box sx={{ height: 6, bgcolor: tokens.semantic.color.surface.default.value, borderRadius: tokens.semantic.radius.full.value, mt: spacing[1].value }}>
-                    <Box sx={{ height: '100%', width: `${completion}%`, bgcolor: tokens.semantic.color.action.primary.default?.value || tokens.semantic.color.outline.default.value, borderRadius: tokens.semantic.radius.full.value }} />
-                  </Box>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mt: spacing[1].value }}>
+                  <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={spacing[1].value}>
+                    <Typography
+                      variant="labelLg"
+                      sx={{ fontWeight: tokens.core.fontWeight.semiBold.value, flex: 1, minWidth: 0 }}
+                    >
+                      {item.title}
+                    </Typography>
+                    <Stack spacing={spacing['0_5'].value} alignItems="center">
+                      <CircularProgress
+                        {...CircularProgressPresets.size.md}
+                        variant="determinate"
+                        value={completion}
+                        aria-label={`Completion ${completion}%`}
+                      />
+                      <Typography variant="labelSm" sx={{ color: tokens.semantic.color.type.muted.value }}>
+                        {completion}%
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      columnGap: spacing[1].value,
+                      rowGap: spacing[1].value,
+                      mt: spacing[1].value
+                    }}
+                  >
                     <Chip label={dl.text} size="small" color={dl.kind === 'danger' ? 'error' : dl.kind === 'warning' ? 'warning' : 'default'} />
                     {item.statusPill && <Chip label={item.statusPill} size="small" color={pillKind} />}
                     {item.tags.map((tag) => (
                       <Chip key={tag} label={tag} size="small" variant="outlined" />
                     ))}
-                  </Stack>
+                  </Box>
                   <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value, mt: spacing[1].value }}>
                     ({item.description})
                   </Typography>
