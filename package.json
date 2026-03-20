@@ -10,7 +10,9 @@
   "license": "UNLICENSED",
   "description": "Agentic helper for board governance and meeting management",
   "dependencies": {
+    "@diligentcorp/atlas-react-icons": "^0.7.48",
     "@diligentcorp/atlas-theme-mui": "^0.27.11",
+    "@diligentcorp/atlas-web-component-global-nav": "^2.1.14",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.3.9",

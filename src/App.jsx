@@ -113,8 +113,14 @@ function AppContent({
   drawerOpen,
   onDrawerClose
 }) {
-  const { isDocked, isMinimized } = useAIChatUIContext();
+  const { isDocked, isMinimized, setIsDocked, setIsMinimized } = useAIChatUIContext();
   const shouldDock = isDocked && !isMinimized;
+
+  const handleSeeAll = () => {
+    if (setIsDocked) setIsDocked(true);
+    if (setIsMinimized) setIsMinimized(false);
+    onSeeAll();
+  };
   const allowPanel = portalViewActive || companionSummaryActive;
   const topBarHeight = tokens.core.spacing[9].value;
   const panelWidthToken = tokens.component?.aiChatUi?.panel?.docked?.width?.value;
@@ -132,6 +138,10 @@ function AppContent({
     />
   );
 
+  if (portalViewActive) {
+    return <PortalView onModeChange={onModeChange} />;
+  }
+
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: tokens.semantic.color.surface.inverse.value, color: tokens.semantic.color.type.inverse.value }}>
       <TopBar
@@ -142,20 +152,6 @@ function AppContent({
       />
 
       <Box sx={{ pt: topBarHeight }}>
-        {portalViewActive && (
-          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
-            <Box sx={{ flex: 1 }}>
-              <PortalView />
-            </Box>
-            {shouldDock && (
-              <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
-                <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
-                  {renderSidePanel(dockedPanelWidth)}
-                </Box>
-              </Box>
-            )}
-          </Box>
-        )}
 
         {companionSummaryActive && route.view === 'dashboard' && (
           <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
@@ -178,7 +174,7 @@ function AppContent({
                 onRetry={onRetryDashboard}
                 onExpandChat={onExpandChat}
                 onClosePopover={onClosePopover}
-                onSeeAll={onSeeAll}
+                onSeeAll={handleSeeAll}
                 onCardRoute={onCardRoute}
               />
             </Box>
@@ -217,15 +213,7 @@ function AppContent({
             onAssistantInputChange={onAssistantInputChange}
             onAssistantSend={onAssistantSend}
             onAssistantPromptClick={onAssistantPromptClick}
-            sidePanel={
-              shouldDock ? (
-                <Box sx={{ width: dockedPanelWidth, flexShrink: 0 }}>
-                  <Box sx={{ position: 'fixed', top: topBarHeight, right: 0, width: dockedPanelWidth }}>
-                    {renderSidePanel(dockedPanelWidth)}
-                  </Box>
-                </Box>
-              ) : null
-            }
+            sidePanel={renderSidePanel()}
           />
         )}
 

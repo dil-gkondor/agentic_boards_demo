@@ -41,13 +41,13 @@ export default function DashboardView({
   const timeLabel = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 
   return (
-    <Box sx={{ px: spacing[6].value, py: spacing[6].value }}>
+    <Box sx={{ maxWidth: 1280, mx: 'auto', px: spacing[6].value, py: spacing[6].value }}>
       <Stack spacing={spacing[4].value}>
-        <Box>
+        <Box sx={{ textAlign: 'center' }}>
           <Typography variant="h3" sx={{ color: tokens.semantic.color.type.inverse.value }}>
             You're on track, Brian
           </Typography>
-          <Typography variant="textMd" sx={{ color: tokens.semantic.color.type.muted.value, maxWidth: 720, mt: spacing[1].value }}>
+          <Typography variant="textMd" sx={{ color: tokens.semantic.color.type.muted.value, maxWidth: 720, mx: 'auto', mt: spacing[1].value }}>
             Get your board books ready faster: the assistant pulls recurring items, flags conflicts, requests missing
             materials from owners, and compiles publish-ready packs.
           </Typography>
@@ -79,16 +79,16 @@ export default function DashboardView({
                 onClick={() => item.route && onCardRoute(item.route)}
               >
                 <CardContent>
-                  <Typography variant="labelLg" sx={{ fontWeight: tokens.core.fontWeight.semiBold.value }}>
+                  <Typography variant="labelLg" component="div" sx={{ fontWeight: tokens.core.fontWeight.semiBold.value }}>
                     {item.title}
                   </Typography>
-                  <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value, mt: spacing['0_5'].value }}>
+                  <Typography variant="textSm" component="div" sx={{ color: tokens.semantic.color.type.muted.value, mt: '4px' }}>
                     {completion}% complete
                   </Typography>
                   <Box sx={{ height: 6, bgcolor: tokens.semantic.color.surface.default.value, borderRadius: tokens.semantic.radius.full.value, mt: spacing[1].value }}>
                     <Box sx={{ height: '100%', width: `${completion}%`, bgcolor: tokens.semantic.color.action.primary.default?.value || tokens.semantic.color.outline.default.value, borderRadius: tokens.semantic.radius.full.value }} />
                   </Box>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', mt: spacing[1].value }}>
+                  <Stack direction="row" sx={{ flexWrap: 'wrap', gap: '4px 8px', mt: spacing[1].value }}>
                     <Chip label={dl.text} size="small" color={dl.kind === 'danger' ? 'error' : dl.kind === 'warning' ? 'warning' : 'default'} />
                     {item.statusPill && <Chip label={item.statusPill} size="small" color={pillKind} />}
                     {item.tags.map((tag) => (
@@ -240,9 +240,13 @@ export default function DashboardView({
             </Card>
           ))}
         </Box>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: spacing[1].value }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: spacing[1].value }}>
           {dashboardMutedProducts.map((name) => (
-            <Chip key={name} label={name} variant="outlined" />
+            <Card key={name} sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.md.value }}>
+              <CardContent sx={{ py: spacing[2].value, px: spacing[2].value, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 48, '&:last-child': { pb: spacing[2].value } }}>
+                <Typography variant="labelSm" sx={{ textAlign: 'center' }}>{name}</Typography>
+              </CardContent>
+            </Card>
           ))}
         </Box>
       </Stack>
