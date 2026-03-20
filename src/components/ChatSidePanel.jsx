@@ -39,7 +39,7 @@ export default function ChatSidePanel({ messages, loading, error, onSend, onStop
           sx={{ pl: 0 }}
         >
           <Tab label="Chat" value="chat" />
-          <Tab label="History" value="history" />
+          <Tab label="AI Control" value="history" />
         </Tabs>
       </Box>
       {activeTab === 'chat' && (

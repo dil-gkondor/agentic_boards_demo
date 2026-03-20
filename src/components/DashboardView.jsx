@@ -14,6 +14,7 @@ import FullscreenIcon from '@diligentcorp/atlas-react-icons/dist/esm/lens/Fullsc
 import { SectionHeader } from '@diligentcorp/atlas-theme-mui/lib/themes/lens/components';
 import { dueLabel } from '../utils/date.js';
 import { FEATURE_CARDS } from '../data/dashboard.js';
+import MainPageLayout from './MainPageLayout.jsx';
 
 export default function DashboardView({
   dashboardCases,
@@ -50,10 +51,10 @@ export default function DashboardView({
   });
 
   return (
-    <Box
+    <MainPageLayout
+      px={spacing[6].value}
+      py={spacing[6].value}
       sx={{
-        px: spacing[6].value,
-        py: spacing[6].value,
         '@keyframes fadeBlurIn': {
           '0%': { opacity: 0, filter: 'blur(6px)', transform: 'translateY(6px)' },
           '100%': { opacity: 1, filter: 'blur(0)', transform: 'translateY(0)' }
@@ -61,11 +62,14 @@ export default function DashboardView({
       }}
     >
       <Stack spacing={spacing[4].value}>
-        <Box>
+        <Box id="dashboard-hero" sx={{ textAlign: 'center' }}>
           <Typography variant="h3" sx={{ color: tokens.semantic.color.type.inverse.value }}>
             You're on track, Brian
           </Typography>
-          <Typography variant="textMd" sx={{ color: tokens.semantic.color.type.muted.value, maxWidth: 720, mt: spacing[1].value }}>
+          <Typography
+            variant="textMd"
+            sx={{ color: tokens.semantic.color.type.muted.value, maxWidth: 720, mt: spacing[1].value, mx: 'auto' }}
+          >
             Get your board books ready faster: the assistant pulls recurring items, flags conflicts, requests missing
             materials from owners, and compiles publish-ready packs.
           </Typography>
@@ -81,7 +85,10 @@ export default function DashboardView({
           }
         />
 
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: spacing[2].value }}>
+        <Box
+          id="dashboard-task-cards"
+          sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: spacing[2].value }}
+        >
           {dashboardCases.map((item, index) => {
             const completion = index === 0 && dashboardSummaryCompleted ? 80 : item.completion;
             const dl = dueLabel(item.dueDate);
@@ -141,7 +148,7 @@ export default function DashboardView({
           })}
         </Box>
 
-        <Card sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.lg.value }}>
+        <Card id="dashboard-ai-chat" sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.lg.value }}>
           <CardContent>
             <Stack spacing={spacing[2].value}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
@@ -265,24 +272,43 @@ export default function DashboardView({
         </Card>
 
         <SectionHeader title="What I can help you with" headingLevel="h3" />
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: spacing[2].value }}>
+        <Box
+          id="dashboard-assistant-cards"
+          sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: spacing[2].value }}
+        >
           {FEATURE_CARDS.map((card) => (
             <Card key={card.title} sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.lg.value }}>
               <CardContent>
                 <Typography variant="labelLg">{card.title}</Typography>
-                <Typography variant="textSm" sx={{ color: tokens.semantic.color.type.muted.value, mt: spacing['0_5'].value }}>
+                <Typography variant="textSm" sx={{ display: 'block', color: tokens.semantic.color.type.muted.value, mt: spacing['0_5'].value }}>
                   {card.desc}
                 </Typography>
               </CardContent>
             </Card>
           ))}
         </Box>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: spacing[1].value }}>
+        <SectionHeader title="Boost your efficiency with AI across the Diligent platform" headingLevel="h3" />
+        <Box
+          id="dashboard-product-cards"
+          sx={{
+            display: 'grid',
+            gridAutoFlow: 'column',
+            gridTemplateRows: 'repeat(2, minmax(0, 1fr))',
+            gridAutoColumns: 'minmax(140px, 1fr)',
+            gap: spacing[1].value
+          }}
+        >
           {dashboardMutedProducts.map((name) => (
-            <Chip key={name} label={name} variant="outlined" />
+            <Card key={name} sx={{ bgcolor: tokens.semantic.color.surface.variant.value, borderRadius: tokens.semantic.radius.lg.value }}>
+              <CardContent sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography variant="labelLg" sx={{ color: tokens.semantic.color.type.muted.value, textAlign: 'center' }}>
+                  {name}
+                </Typography>
+              </CardContent>
+            </Card>
           ))}
         </Box>
       </Stack>
-    </Box>
+    </MainPageLayout>
   );
 }

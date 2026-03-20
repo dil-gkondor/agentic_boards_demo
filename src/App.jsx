@@ -156,7 +156,6 @@ function AppContent({
             sx={{
               display: 'flex',
               gap: tokens.core.spacing[2].value,
-              px: tokens.core.spacing[3].value,
               width: '100%',
               minWidth: 0
             }}
@@ -175,7 +174,7 @@ function AppContent({
         )}
 
         {companionSummaryActive && route.view === 'dashboard' && (
-          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value, px: tokens.core.spacing[3].value }}>
+          <Box sx={{ display: 'flex', gap: tokens.core.spacing[2].value }}>
             <Box sx={{ flex: 1 }}>
               <DashboardView
                 dashboardCases={dashboardCases}

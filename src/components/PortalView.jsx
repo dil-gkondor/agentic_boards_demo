@@ -13,6 +13,7 @@ import {
   Typography,
   useTheme
 } from '@mui/material';
+import MainPageLayout from './MainPageLayout.jsx';
 
 const BOOKS = [
   { id: 'book-1', title: 'Comprehensive Financial Overview for the Year 2023', date: 'Jan 20, 2026', status: 'Published' },
@@ -42,11 +43,10 @@ export default function PortalView({ transitionKey }) {
   });
 
   return (
-    <Box
+    <MainPageLayout
+      px={spacing[6].value}
+      py={spacing[4].value}
       sx={{
-        px: spacing[6].value,
-        py: spacing[4].value,
-        width: '100%',
         minWidth: 0,
         '@keyframes fadeBlurIn': {
           '0%': { opacity: 0, filter: 'blur(6px)', transform: 'translateY(6px)' },
@@ -174,6 +174,6 @@ export default function PortalView({ transitionKey }) {
           </Box>
         </Box>
       </Stack>
-    </Box>
+    </MainPageLayout>
   );
 }
